@@ -27,12 +27,15 @@ export class Overlay {
 
   // Während des Check-ins zeigen wir ALLE Bewerber der Kategorie (rot/grün),
   // nicht nur die bereits Eingecheckten, deshalb ein zweiter Resource-Load.
+  // Params ist bewusst die nackte category_id (kein neues Objekt bei jedem
+  // 2s-Poll), sonst hält resource() jeden Poll für "neue" Parameter und lädt
+  // die Liste ständig neu, wodurch sie kurz leer aufblitzt.
   protected readonly applicants = resource({
     params: () => {
       const r = this.round.value();
-      return r?.phase === 'checkin' && r.category_id ? { categoryId: r.category_id } : undefined;
+      return r?.phase === 'checkin' ? (r.category_id ?? undefined) : undefined;
     },
-    loader: ({ params }) => this.applicationService.getApplicationsForCategory(params.categoryId),
+    loader: ({ params }) => this.applicationService.getApplicationsForCategory(params),
   });
 
   protected isCheckedIn(profileId: string, round: LiveRound): boolean {

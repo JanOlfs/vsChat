@@ -1,0 +1,21 @@
+{
+  "name": "captnblacky-chatbot",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-17",
+  // Nicht geheime Konfiguration. Secrets (TWITCH_BOT_OAUTH_TOKEN,
+  // SUPABASE_SERVICE_ROLE_KEY) werden separat per `wrangler secret put` gesetzt,
+  // siehe README.
+  "vars": {
+    "TWITCH_BOT_USERNAME": "CHANGE_ME_bot_login",
+    "TWITCH_CHANNEL": "captnblacky",
+    "SUPABASE_URL": "https://egatvfjimsrybmzhlzts.supabase.co"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "CHAT_BOT", "class_name": "ChatBotDo" }]
+  },
+  "migrations": [{ "tag": "v1", "new_classes": ["ChatBotDo"] }],
+  // Hält die Twitch-IRC-Verbindung am Leben bzw. verbindet nach einem Abriss neu.
+  "triggers": {
+    "crons": ["*/2 * * * *"]
+  }
+}

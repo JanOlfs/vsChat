@@ -19,6 +19,7 @@ export interface Profile {
   twitch_login: string;
   display_name: string;
   avatar_url: string | null;
+  is_admin: boolean;
 }
 
 export interface Application {

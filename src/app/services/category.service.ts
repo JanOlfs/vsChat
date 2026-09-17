@@ -33,4 +33,33 @@ export class CategoryService {
     }
     return data;
   }
+
+  async createCategory(input: {
+    slug: string;
+    name: string;
+    description?: string;
+    sort_order?: number;
+  }): Promise<Category> {
+    const { data, error } = await this.supabase.client
+      .from('categories')
+      .insert({
+        slug: input.slug,
+        name: input.name,
+        description: input.description ?? null,
+        sort_order: input.sort_order ?? 0,
+      })
+      .select('*')
+      .single();
+    if (error) {
+      throw error;
+    }
+    return data;
+  }
+
+  async setCategoryOpen(id: string, isOpen: boolean): Promise<void> {
+    const { error } = await this.supabase.client.from('categories').update({ is_open: isOpen }).eq('id', id);
+    if (error) {
+      throw error;
+    }
+  }
 }

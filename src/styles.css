@@ -61,6 +61,33 @@ main {
   color: #b91c1c;
 }
 
+.admin-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.4rem 0.75rem 0.4rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-form {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9em;
+}
+
 /* Overlay (OBS Browser Source): dunkles Panel auf transparentem Hintergrund. */
 app-overlay {
   display: block;

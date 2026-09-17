@@ -1,0 +1,55 @@
+<h1>Admin: Kategorien</h1>
+
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (categories.isLoading()) {
+  <p>Lade Kategorien …</p>
+} @else if (categories.error()) {
+  <p role="alert">Kategorien konnten nicht geladen werden.</p>
+} @else {
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Slug</th>
+        <th>Bewerbungen</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (category of categories.value(); track category.id) {
+        <tr>
+          <td>{{ category.name }}</td>
+          <td>{{ category.slug }}</td>
+          <td>{{ category.applicant_count }}</td>
+          <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
+          <td>
+            <button type="button" (click)="toggleOpen(category)">
+              {{ category.is_open ? 'Schließen' : 'Öffnen' }}
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
+<h2>Neue Kategorie</h2>
+<form class="admin-form" (submit)="createCategory($event, slugInput, nameInput, descriptionInput)">
+  <label>
+    Slug
+    <input #slugInput type="text" required />
+  </label>
+  <label>
+    Name
+    <input #nameInput type="text" required />
+  </label>
+  <label>
+    Beschreibung (optional)
+    <input #descriptionInput type="text" />
+  </label>
+  <button type="submit">Anlegen</button>
+</form>

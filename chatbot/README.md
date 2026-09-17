@@ -15,7 +15,7 @@ vorher einspielen).
 4. `!startvote` (Mod) öffnet das Voting unter den Eingecheckten.
 5. `!vote <Twitch-Name>` (jeder Zuschauer) stimmt ab, spätere Stimme überschreibt die vorherige.
 6. `!closevote` (Mod) wertet aus, postet den Gewinner im Chat und schreibt eine Zeile in `matches`.
-7. `!status` (Mod) zeigt Phase/Kategorie/Anzahl Eingecheckter, nützlich solange es kein Admin-Panel gibt.
+7. `!botstatus` (Mod) zeigt Phase/Kategorie/Anzahl Eingecheckter, nützlich solange es kein Admin-Panel gibt.
 
 Bei Gleichstand gewinnt der zuerst eingecheckte Kandidat (kein Losverfahren,
 `ponytail`-Kommentar dazu im Code).

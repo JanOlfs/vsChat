@@ -135,7 +135,7 @@ export class ChatBotDo implements DurableObject {
       case 'closevote':
         if (isMod) await this.closeVote();
         break;
-      case 'status':
+      case 'botstatus':
         if (isMod) this.say(this.statusText());
         break;
     }

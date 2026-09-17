@@ -36,3 +36,20 @@ export interface ApplicationWithProfile extends Application {
 export interface ApplicationWithCategory extends Application {
   category: Category;
 }
+
+export type RoundPhase = 'idle' | 'checkin' | 'voting';
+
+export interface CheckedInViewer {
+  twitch_login: string;
+  display_name: string;
+}
+
+export interface LiveRound {
+  id: number;
+  phase: RoundPhase;
+  category_id: string | null;
+  checked_in: CheckedInViewer[];
+  vote_counts: Record<string, number>;
+  updated_at: string;
+  category: Category | null;
+}

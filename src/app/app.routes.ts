@@ -4,6 +4,7 @@ import { Home } from './pages/home/home';
 import { CategoryDetail } from './pages/category-detail/category-detail';
 import { MyApplications } from './pages/my-applications/my-applications';
 import { AuthCallback } from './pages/auth-callback/auth-callback';
+import { Overlay } from './pages/overlay/overlay';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -17,6 +18,8 @@ export const routes: Routes = [
       { path: 'auth/callback', component: AuthCallback },
     ],
   },
-  // /admin und /overlay kommen später. /overlay bekommt bewusst kein Shell-Layout
-  // (transparenter Hintergrund, keine Kopf-/Fußzeile), deshalb als eigene Top-Level-Route.
+  // Bewusst kein Shell-Layout (transparenter Hintergrund, keine Kopf-/Fußzeile),
+  // deshalb eigene Top-Level-Route statt Kind von Shell.
+  { path: 'overlay', component: Overlay },
+  // /admin kommt später.
 ];

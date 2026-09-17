@@ -6,6 +6,7 @@ interface CheckedInEntry {
   twitchUserId: string;
   twitchLogin: string;
   profileId: string;
+  displayName: string;
 }
 
 type Phase = 'idle' | 'checkin' | 'voting';
@@ -231,6 +232,7 @@ export class ChatBotDo implements DurableObject {
 
     this.round = { ...EMPTY_ROUND, phase: 'checkin', categorySlug: slug, categoryId: category.id };
     await this.persist();
+    await this.syncLiveRound();
     this.say(`Check-in für ${category.name} ist offen! Schreibt !checkin im Chat, wenn ihr euch beworben habt.`);
   }
 
@@ -240,7 +242,7 @@ export class ChatBotDo implements DurableObject {
 
     const { data: profile } = await this.supabase()
       .from('profiles')
-      .select('id')
+      .select('id, display_name')
       .eq('twitch_user_id', twitchUserId)
       .maybeSingle();
     if (!profile) return;
@@ -253,14 +255,21 @@ export class ChatBotDo implements DurableObject {
       .maybeSingle();
     if (!application) return;
 
-    this.round.checkedIn[twitchUserId] = { twitchUserId, twitchLogin, profileId: profile.id };
+    this.round.checkedIn[twitchUserId] = {
+      twitchUserId,
+      twitchLogin,
+      profileId: profile.id,
+      displayName: profile.display_name,
+    };
     await this.persist();
+    await this.syncLiveRound();
   }
 
   private async closeCheckin(): Promise<void> {
     if (this.round.phase !== 'checkin') return;
     this.round.phase = 'idle';
     await this.persist();
+    await this.syncLiveRound();
 
     const names = Object.values(this.round.checkedIn).map((c) => c.twitchLogin);
     this.say(
@@ -278,6 +287,7 @@ export class ChatBotDo implements DurableObject {
     this.round.phase = 'voting';
     this.round.votes = {};
     await this.persist();
+    await this.syncLiveRound();
 
     const names = Object.values(this.round.checkedIn).map((c) => c.twitchLogin);
     this.say(`Voting läuft! Stimmt ab mit !vote <Name>: ${names.join(', ')}`);
@@ -291,6 +301,7 @@ export class ChatBotDo implements DurableObject {
 
     this.round.votes[voterTwitchUserId] = candidate.twitchLogin;
     await this.persist();
+    await this.syncLiveRound();
   }
 
   private async closeVote(): Promise<void> {
@@ -334,10 +345,42 @@ export class ChatBotDo implements DurableObject {
   private async resetRound(): Promise<void> {
     this.round = EMPTY_ROUND;
     await this.persist();
+    await this.syncLiveRound();
   }
 
   private async persist(): Promise<void> {
     await this.ctx.storage.put('round', this.round);
+  }
+
+  /**
+   * Schreibt den aktuellen Rundenstand in die `live_round`-Singleton-Zeile, die
+   * das Overlay per Polling ausliest. ponytail: kein Realtime-Broadcast/eigener
+   * Websocket-Endpunkt, Polling im Overlay reicht für einen einzelnen
+   * Browser-Source-Viewer, Nachteil ist ein paar Sekunden Verzögerung.
+   */
+  private async syncLiveRound(): Promise<void> {
+    const checkedIn = Object.values(this.round.checkedIn).map((c) => ({
+      twitch_login: c.twitchLogin,
+      display_name: c.displayName,
+    }));
+    const voteCounts: Record<string, number> = {};
+    for (const login of Object.values(this.round.votes)) {
+      voteCounts[login] = (voteCounts[login] ?? 0) + 1;
+    }
+
+    const { error } = await this.supabase()
+      .from('live_round')
+      .update({
+        phase: this.round.phase,
+        category_id: this.round.categoryId,
+        checked_in: checkedIn,
+        vote_counts: voteCounts,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', 1);
+    if (error) {
+      console.error('live_round sync fehlgeschlagen', error);
+    }
   }
 
   private statusText(): string {

@@ -1,0 +1,26 @@
+@if (round.value(); as r) {
+  @if (r.phase === 'checkin') {
+    <div class="overlay-panel">
+      <h2>Check-in: {{ r.category?.name }}</h2>
+      <ul>
+        @for (viewer of r.checked_in; track viewer.twitch_login) {
+          <li>{{ viewer.display_name }}</li>
+        } @empty {
+          <li class="muted">Noch niemand eingecheckt …</li>
+        }
+      </ul>
+    </div>
+  } @else if (r.phase === 'voting') {
+    <div class="overlay-panel">
+      <h2>Voting: {{ r.category?.name }}</h2>
+      <ul>
+        @for (viewer of r.checked_in; track viewer.twitch_login) {
+          <li>
+            <span>{{ viewer.display_name }}</span>
+            <span class="votes">{{ r.vote_counts[viewer.twitch_login] ?? 0 }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+}

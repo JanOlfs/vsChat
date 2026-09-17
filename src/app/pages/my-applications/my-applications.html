@@ -1,0 +1,22 @@
+<h1>Meine Bewerbungen</h1>
+
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (applications.isLoading()) {
+  <p>Lade Bewerbungen …</p>
+} @else if (applications.error()) {
+  <p role="alert">Bewerbungen konnten nicht geladen werden.</p>
+} @else {
+  <ul>
+    @for (application of applications.value(); track application.id) {
+      <li>
+        {{ application.category.name }}
+        <button type="button" (click)="withdraw(application)">Zurückziehen</button>
+      </li>
+    } @empty {
+      <li>Noch keine Bewerbungen.</li>
+    }
+  </ul>
+}

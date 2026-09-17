@@ -1,0 +1,46 @@
+@if (category.isLoading()) {
+  <p>Lade Kategorie …</p>
+} @else if (category.error() || !category.value()) {
+  <p role="alert">Kategorie nicht gefunden.</p>
+} @else {
+  @let cat = category.value()!;
+
+  <h1>{{ cat.name }}</h1>
+  @if (cat.description) {
+    <p>{{ cat.description }}</p>
+  }
+
+  @if (!cat.is_open) {
+    <p class="badge">Diese Kategorie ist geschlossen, es werden keine Bewerbungen mehr angenommen.</p>
+  }
+
+  @if (actionError()) {
+    <p role="alert">{{ actionError() }}</p>
+  }
+
+  @if (myApplication(); as mine) {
+    <button type="button" (click)="withdraw()">Bewerbung zurückziehen</button>
+  } @else {
+    <button type="button" [disabled]="!cat.is_open" (click)="apply()">Bewerben</button>
+  }
+
+  <h2>Bewerber</h2>
+  @if (applications.isLoading()) {
+    <p>Lade Bewerber …</p>
+  } @else if (applications.error()) {
+    <p role="alert">Bewerberliste konnte nicht geladen werden.</p>
+  } @else {
+    <ul class="applicant-list">
+      @for (application of applications.value(); track application.id) {
+        <li>
+          @if (application.profile.avatar_url) {
+            <img [src]="application.profile.avatar_url" [alt]="application.profile.display_name" width="32" height="32" />
+          }
+          <span>{{ application.profile.display_name }}</span>
+        </li>
+      } @empty {
+        <li>Noch keine Bewerbungen.</li>
+      }
+    </ul>
+  }
+}

@@ -1,0 +1,31 @@
+<section>
+  <h1>Captnblacky gegen Chat</h1>
+  <p>
+    In mehreren Kategorien tritt der Streamer gegen jeweils einen Zuschauer an. Bewirb dich hier auf
+    eine Kategorie, Check-in und Voting laufen später im Stream über den Twitch-Chat.
+  </p>
+</section>
+
+<section>
+  <h2>Kategorien</h2>
+
+  @if (categories.isLoading()) {
+    <p>Lade Kategorien …</p>
+  } @else if (categories.error()) {
+    <p role="alert">Kategorien konnten nicht geladen werden.</p>
+  } @else {
+    <ul class="category-list">
+      @for (category of categories.value(); track category.id) {
+        <li>
+          <a [routerLink]="['/kategorie', category.slug]">
+            <strong>{{ category.name }}</strong>
+            <span>{{ category.applicant_count }} Bewerbungen</span>
+            @if (!category.is_open) {
+              <span class="badge">geschlossen</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>

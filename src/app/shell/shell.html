@@ -1,0 +1,18 @@
+<header class="site-header">
+  <a routerLink="/" class="brand">Captnblacky gegen Chat</a>
+  <nav>
+    @if (auth.isLoggedIn()) {
+      <a routerLink="/meine-bewerbungen">Meine Bewerbungen</a>
+      <span class="user">{{ auth.currentProfile()?.display_name }}</span>
+      <button type="button" (click)="logout()">Logout</button>
+    } @else {
+      <button type="button" (click)="login()">Login mit Twitch</button>
+    }
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="site-footer">Captnblacky gegen Chat</footer>

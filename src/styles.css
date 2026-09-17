@@ -102,3 +102,12 @@ app-overlay .overlay-panel .votes {
 app-overlay .overlay-panel .muted {
   opacity: 0.7;
 }
+
+/* Check-in-Liste: rot = beworben, noch nicht eingecheckt; grün = eingecheckt. */
+app-overlay .overlay-panel li.applicant {
+  color: #f87171;
+}
+
+app-overlay .overlay-panel li.applicant.checked-in {
+  color: #4ade80;
+}

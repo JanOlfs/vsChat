@@ -362,6 +362,7 @@ export class ChatBotDo implements DurableObject {
     const checkedIn = Object.values(this.round.checkedIn).map((c) => ({
       twitch_login: c.twitchLogin,
       display_name: c.displayName,
+      profile_id: c.profileId,
     }));
     const voteCounts: Record<string, number> = {};
     for (const login of Object.values(this.round.votes)) {

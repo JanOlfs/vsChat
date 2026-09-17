@@ -3,10 +3,10 @@
     <div class="overlay-panel">
       <h2>Check-in: {{ r.category?.name }}</h2>
       <ul>
-        @for (viewer of r.checked_in; track viewer.twitch_login) {
-          <li>{{ viewer.display_name }}</li>
+        @for (app of applicants.value(); track app.id) {
+          <li class="applicant" [class.checked-in]="isCheckedIn(app.profile.id, r)">{{ app.profile.display_name }}</li>
         } @empty {
-          <li class="muted">Noch niemand eingecheckt …</li>
+          <li class="muted">Keine Bewerbungen für diese Kategorie.</li>
         }
       </ul>
     </div>

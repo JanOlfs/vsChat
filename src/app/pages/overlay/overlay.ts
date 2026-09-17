@@ -1,5 +1,7 @@
 import { Component, DestroyRef, inject, resource } from '@angular/core';
 import { LiveRoundService } from '../../services/live-round.service';
+import { ApplicationService } from '../../services/application.service';
+import type { LiveRound } from '../../models/types';
 
 const POLL_INTERVAL_MS = 2000;
 
@@ -17,10 +19,25 @@ const POLL_INTERVAL_MS = 2000;
 })
 export class Overlay {
   private readonly liveRoundService = inject(LiveRoundService);
+  private readonly applicationService = inject(ApplicationService);
 
   protected readonly round = resource({
     loader: () => this.liveRoundService.getLiveRound(),
   });
+
+  // Während des Check-ins zeigen wir ALLE Bewerber der Kategorie (rot/grün),
+  // nicht nur die bereits Eingecheckten, deshalb ein zweiter Resource-Load.
+  protected readonly applicants = resource({
+    params: () => {
+      const r = this.round.value();
+      return r?.phase === 'checkin' && r.category_id ? { categoryId: r.category_id } : undefined;
+    },
+    loader: ({ params }) => this.applicationService.getApplicationsForCategory(params.categoryId),
+  });
+
+  protected isCheckedIn(profileId: string, round: LiveRound): boolean {
+    return round.checked_in.some((viewer) => viewer.profile_id === profileId);
+  }
 
   constructor() {
     document.documentElement.style.background = 'transparent';

@@ -42,6 +42,7 @@ export type RoundPhase = 'idle' | 'checkin' | 'voting';
 export interface CheckedInViewer {
   twitch_login: string;
   display_name: string;
+  profile_id: string;
 }
 
 export interface LiveRound {

@@ -18,10 +18,11 @@ Supabase, Deployment auf Cloudflare Pages.
 4. Vor dem produktiven Einsatz einmal einloggen und `raw_user_meta_data` in der Supabase-Konsole
    prüfen, ob die Twitch-Schlüsselnamen zum Trigger in der Migration passen (siehe Kommentar dort).
 
-## Deployment (Cloudflare Pages)
+## Deployment (Cloudflare Workers, Git-verbunden)
 
-Build-Befehl `npm run build`, Ausgabeverzeichnis `dist/bewerbungsseite/browser`. Die
-`_redirects`-Datei für den SPA-Fallback liegt in `public/` und landet automatisch im Build-Output.
+Build command `npm run build`, Deploy command `npx wrangler deploy`. [wrangler.jsonc](./wrangler.jsonc)
+zeigt auf `dist/bewerbungsseite/browser` und stellt mit `not_found_handling:
+"single-page-application"` den SPA-Fallback für die Angular-Routen sicher.
 
 ---
 

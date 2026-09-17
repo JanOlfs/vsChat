@@ -6,14 +6,14 @@
   // SUPABASE_SERVICE_ROLE_KEY) werden separat per `wrangler secret put` gesetzt,
   // siehe README.
   "vars": {
-    "TWITCH_BOT_USERNAME": "CHANGE_ME_bot_login",
+    "TWITCH_BOT_USERNAME": "kapitanbot",
     "TWITCH_CHANNEL": "captnblacky",
     "SUPABASE_URL": "https://egatvfjimsrybmzhlzts.supabase.co"
   },
   "durable_objects": {
     "bindings": [{ "name": "CHAT_BOT", "class_name": "ChatBotDo" }]
   },
-  "migrations": [{ "tag": "v1", "new_classes": ["ChatBotDo"] }],
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChatBotDo"] }],
   // Hält die Twitch-IRC-Verbindung am Leben bzw. verbindet nach einem Abriss neu.
   "triggers": {
     "crons": ["*/2 * * * *"]

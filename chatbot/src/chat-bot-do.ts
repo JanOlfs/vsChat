@@ -87,7 +87,6 @@ export class ChatBotDo implements DurableObject {
 
   private async ensureConnected(): Promise<void> {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      console.log('ensureConnected: already open, skipping');
       return;
     }
     if (!this.tokens) return; // ready ist noch nicht durchgelaufen, sollte durch await this.ready oben nicht passieren
@@ -145,7 +144,6 @@ export class ChatBotDo implements DurableObject {
   }
 
   private async onIrcData(raw: string): Promise<void> {
-    console.log('irc data:', raw);
     for (const line of raw.split('\r\n')) {
       if (!line) continue;
       const msg = parseIrcMessage(line);
@@ -164,7 +162,6 @@ export class ChatBotDo implements DurableObject {
         }
       }
       if (msg.command === 'PRIVMSG') {
-        console.log('privmsg from', loginFromPrefix(msg.prefix), ':', msg.trailing);
         await this.handleChatMessage(msg.tags, msg.prefix, msg.trailing ?? '');
       }
     }

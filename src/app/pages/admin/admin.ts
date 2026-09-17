@@ -1,5 +1,6 @@
 import { Component, inject, resource, signal } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
+import { ApplicationService } from '../../services/application.service';
 import type { CategoryWithCount } from '../../models/types';
 
 @Component({
@@ -8,12 +9,21 @@ import type { CategoryWithCount } from '../../models/types';
 })
 export class Admin {
   private readonly categoryService = inject(CategoryService);
+  private readonly applicationService = inject(ApplicationService);
 
   protected readonly categories = resource({
     loader: () => this.categoryService.getCategories(),
   });
 
   protected readonly error = signal<string | null>(null);
+
+  // Für die Bewerber-Verwaltung: welche Kategorie ist gerade aufgeklappt.
+  protected readonly selectedCategoryId = signal<string | null>(null);
+
+  protected readonly applicants = resource({
+    params: () => this.selectedCategoryId() ?? undefined,
+    loader: ({ params }) => this.applicationService.getApplicationsForCategory(params),
+  });
 
   protected async toggleOpen(category: CategoryWithCount): Promise<void> {
     this.error.set(null);
@@ -22,6 +32,35 @@ export class Admin {
       this.categories.reload();
     } catch {
       this.error.set('Status konnte nicht geändert werden.');
+    }
+  }
+
+  protected manageApplicants(categoryId: string): void {
+    this.selectedCategoryId.set(this.selectedCategoryId() === categoryId ? null : categoryId);
+  }
+
+  protected async removeApplicant(applicationId: string): Promise<void> {
+    this.error.set(null);
+    try {
+      await this.applicationService.withdraw(applicationId);
+      this.applicants.reload();
+      this.categories.reload();
+    } catch {
+      this.error.set('Bewerbung konnte nicht entfernt werden.');
+    }
+  }
+
+  protected async resetCategory(categoryId: string): Promise<void> {
+    if (!confirm('Wirklich alle Bewerbungen dieser Kategorie löschen? Das lässt sich nicht rückgängig machen.')) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      await this.applicationService.deleteAllForCategory(categoryId);
+      this.applicants.reload();
+      this.categories.reload();
+    } catch {
+      this.error.set('Zurücksetzen fehlgeschlagen.');
     }
   }
 

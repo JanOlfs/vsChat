@@ -42,8 +42,17 @@ export class ApplicationService {
     return data as unknown as ApplicationWithProfile;
   }
 
+  /** Auch für Admins nutzbar, um eine fremde Bewerbung zu entfernen (siehe adminGuard/RLS). */
   async withdraw(applicationId: string): Promise<void> {
     const { error } = await this.supabase.client.from('applications').delete().eq('id', applicationId);
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** Admin-Reset: löscht alle Bewerbungen einer Kategorie, für eine neue Runde. */
+  async deleteAllForCategory(categoryId: string): Promise<void> {
+    const { error } = await this.supabase.client.from('applications').delete().eq('category_id', categoryId);
     if (error) {
       throw error;
     }

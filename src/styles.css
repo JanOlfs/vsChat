@@ -88,6 +88,27 @@ main {
   font-size: 0.9em;
 }
 
+.admin-applicants {
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-applicants ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.admin-applicants li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+
 /* Overlay (OBS Browser Source): dunkles Panel auf transparentem Hintergrund. */
 app-overlay {
   display: block;

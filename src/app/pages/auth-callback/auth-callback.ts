@@ -1,6 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AUTH_RETURN_TO_KEY, AuthService } from '../../services/auth.service';
 
 /** OAuth-Rücksprung von Twitch. Supabase parst die URL selbst, wir warten nur auf die Session. */
 @Component({
@@ -27,7 +27,8 @@ export class AuthCallback {
       return;
     }
 
-    const next = params.get('next') ?? '/';
+    const next = sessionStorage.getItem(AUTH_RETURN_TO_KEY) ?? '/';
+    sessionStorage.removeItem(AUTH_RETURN_TO_KEY);
     effect(() => {
       if (this.auth.isLoggedIn()) {
         void this.router.navigateByUrl(next);

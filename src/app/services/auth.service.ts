@@ -2,6 +2,13 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import type { Profile } from '../models/types';
 
+/**
+ * sessionStorage-Key für den Rücksprungpfad nach dem Twitch-Login. Bewusst kein
+ * Query-Parameter an der redirectTo-URL, weil Supabase die Redirect-URL exakt
+ * gegen die Allow-List matcht und ein angehängtes `?next=...` das verhindert.
+ */
+export const AUTH_RETURN_TO_KEY = 'auth_return_to';
+
 /** Login/Logout über Twitch-OAuth, hält das eigene Profil als Signal. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -36,7 +43,8 @@ export class AuthService {
 
   /** Schickt den User zum Twitch-Login, danach zurück auf `returnTo`. */
   async loginWithTwitch(returnTo: string): Promise<void> {
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`;
+    sessionStorage.setItem(AUTH_RETURN_TO_KEY, returnTo);
+    const redirectTo = `${window.location.origin}/auth/callback`;
     const { error } = await this.supabase.client.auth.signInWithOAuth({
       provider: 'twitch',
       options: { redirectTo },

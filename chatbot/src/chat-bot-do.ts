@@ -62,16 +62,23 @@ export class ChatBotDo implements DurableObject {
 
   private async ensureConnected(): Promise<void> {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      console.log('ensureConnected: already open, skipping');
       return;
     }
+    console.log('ensureConnected: opening IRC connection as', this.env.TWITCH_BOT_USERNAME, 'for channel', this.env.TWITCH_CHANNEL);
     const socket = connectIrc(this.env.TWITCH_BOT_OAUTH_TOKEN, this.env.TWITCH_BOT_USERNAME, this.env.TWITCH_CHANNEL);
+    socket.addEventListener('open', () => {
+      console.log('irc socket open');
+    });
     socket.addEventListener('message', (event) => {
       void this.onIrcData(String(event.data));
     });
-    socket.addEventListener('close', () => {
+    socket.addEventListener('close', (event) => {
+      console.log('irc socket closed', event.code, event.reason);
       if (this.socket === socket) this.socket = null;
     });
-    socket.addEventListener('error', () => {
+    socket.addEventListener('error', (event) => {
+      console.error('irc socket error', event);
       if (this.socket === socket) this.socket = null;
     });
     this.socket = socket;
@@ -83,6 +90,7 @@ export class ChatBotDo implements DurableObject {
   }
 
   private async onIrcData(raw: string): Promise<void> {
+    console.log('irc data:', raw);
     for (const line of raw.split('\r\n')) {
       if (!line) continue;
       const msg = parseIrcMessage(line);
@@ -92,7 +100,11 @@ export class ChatBotDo implements DurableObject {
         this.socket?.send(`PONG :${msg.trailing ?? 'tmi.twitch.tv'}\r\n`);
         continue;
       }
+      if (msg.command === 'NOTICE') {
+        console.log('irc notice:', msg.trailing);
+      }
       if (msg.command === 'PRIVMSG') {
+        console.log('privmsg from', loginFromPrefix(msg.prefix), ':', msg.trailing);
         await this.handleChatMessage(msg.tags, msg.prefix, msg.trailing ?? '');
       }
     }

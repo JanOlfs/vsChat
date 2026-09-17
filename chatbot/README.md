@@ -33,10 +33,17 @@ Bei Gleichstand gewinnt der zuerst eingecheckte Kandidat (kein Losverfahren,
 4. Secrets setzen (landen verschlüsselt bei Cloudflare, nie im Repo):
    ```bash
    npx wrangler secret put TWITCH_BOT_OAUTH_TOKEN
+   npx wrangler secret put TWITCH_BOT_REFRESH_TOKEN
    npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
    ```
    Der `service_role`-Key kommt aus Supabase unter Project Settings → API Keys (nicht der
    anon/publishable Key, der reicht hier nicht, weil der Bot in `matches` schreiben muss).
+
+   `TWITCH_BOT_OAUTH_TOKEN`/`TWITCH_BOT_REFRESH_TOKEN` sind nur der **erste** Token, den der Bot
+   beim allerersten Start übernimmt und danach selbst in Durable-Object-Storage verwaltet
+   (proaktive Erneuerung alle 3h über twitchtokengenerator.com's Refresh-Endpunkt, siehe
+   `refreshTokens()` in [chat-bot-do.ts](./src/chat-bot-do.ts)). Ein neues Deployment ändert daran
+   nichts, der gespeicherte Token bleibt erhalten.
 5. Deployen:
    ```bash
    npm install

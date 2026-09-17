@@ -27,6 +27,15 @@ const EMPTY_ROUND: RoundState = {
 };
 
 const RECONNECT_CHECK_MS = 2 * 60_000;
+// Twitch-Access-Tokens laufen üblicherweise nach ~4h ab, wir erneuern proaktiv
+// deutlich davor, damit es im laufenden Stream keinen stillen Verbindungsabriss gibt.
+const TOKEN_REFRESH_INTERVAL_MS = 3 * 60 * 60_000;
+
+interface TokenState {
+  access: string;
+  refresh: string;
+  refreshedAt: number;
+}
 
 /**
  * Ein einziges globales Durable-Object-Exemplar (siehe idFromName('main') in
@@ -37,15 +46,31 @@ const RECONNECT_CHECK_MS = 2 * 60_000;
 export class ChatBotDo implements DurableObject {
   private socket: WebSocket | null = null;
   private round: RoundState = EMPTY_ROUND;
+  private tokens: TokenState | null = null;
   private ready: Promise<void>;
 
   constructor(
     private readonly ctx: DurableObjectState,
     private readonly env: Env,
   ) {
-    this.ready = this.ctx.storage.get<RoundState>('round').then((saved) => {
-      if (saved) this.round = saved;
-    });
+    this.ready = (async () => {
+      const [savedRound, savedTokens] = await Promise.all([
+        this.ctx.storage.get<RoundState>('round'),
+        this.ctx.storage.get<TokenState>('tokens'),
+      ]);
+      if (savedRound) this.round = savedRound;
+      if (savedTokens) {
+        this.tokens = savedTokens;
+      } else {
+        // Erster Start: Tokens aus den Secrets übernehmen und ab jetzt selbst verwalten.
+        this.tokens = {
+          access: this.env.TWITCH_BOT_OAUTH_TOKEN,
+          refresh: this.env.TWITCH_BOT_REFRESH_TOKEN,
+          refreshedAt: Date.now(),
+        };
+        await this.ctx.storage.put('tokens', this.tokens);
+      }
+    })();
   }
 
   async fetch(_request: Request): Promise<Response> {
@@ -65,8 +90,13 @@ export class ChatBotDo implements DurableObject {
       console.log('ensureConnected: already open, skipping');
       return;
     }
+    if (!this.tokens) return; // ready ist noch nicht durchgelaufen, sollte durch await this.ready oben nicht passieren
+    if (Date.now() - this.tokens.refreshedAt > TOKEN_REFRESH_INTERVAL_MS) {
+      await this.refreshTokens();
+    }
+
     console.log('ensureConnected: opening IRC connection as', this.env.TWITCH_BOT_USERNAME, 'for channel', this.env.TWITCH_CHANNEL);
-    const socket = connectIrc(this.env.TWITCH_BOT_OAUTH_TOKEN, this.env.TWITCH_BOT_USERNAME, this.env.TWITCH_CHANNEL);
+    const socket = connectIrc(this.tokens.access, this.env.TWITCH_BOT_USERNAME, this.env.TWITCH_CHANNEL);
     socket.addEventListener('open', () => {
       console.log('irc socket open');
     });
@@ -89,6 +119,31 @@ export class ChatBotDo implements DurableObject {
     }
   }
 
+  /**
+   * Erneuert über twitchtokengenerator.com's Refresh-Endpunkt
+   * (GET /api/refresh/<refresh_token>). Deren genaues Antwortformat ist nicht
+   * offiziell dokumentiert, daher werden mehrere plausible Feldnamen akzeptiert
+   * und eine unerwartete Antwort geloggt statt stillschweigend zu scheitern.
+   */
+  private async refreshTokens(): Promise<void> {
+    if (!this.tokens) return;
+    try {
+      const response = await fetch(`https://twitchtokengenerator.com/api/refresh/${this.tokens.refresh}`);
+      const data = (await response.json()) as Record<string, unknown>;
+      const access = data['token'] ?? data['access_token'] ?? data['access'];
+      const refresh = data['refresh'] ?? data['refresh_token'] ?? this.tokens.refresh;
+      if (typeof access !== 'string' || typeof refresh !== 'string') {
+        console.error('token refresh: unerwartete Antwort', JSON.stringify(data));
+        return;
+      }
+      this.tokens = { access, refresh, refreshedAt: Date.now() };
+      await this.ctx.storage.put('tokens', this.tokens);
+      console.log('twitch token refreshed');
+    } catch (err) {
+      console.error('token refresh fehlgeschlagen', err);
+    }
+  }
+
   private async onIrcData(raw: string): Promise<void> {
     console.log('irc data:', raw);
     for (const line of raw.split('\r\n')) {
@@ -102,6 +157,11 @@ export class ChatBotDo implements DurableObject {
       }
       if (msg.command === 'NOTICE') {
         console.log('irc notice:', msg.trailing);
+        if (msg.trailing?.toLowerCase().includes('login authentication failed')) {
+          // Twitch trennt die Verbindung direkt danach selbst; der nächste Alarm
+          // (spätestens in RECONNECT_CHECK_MS) verbindet mit dem neuen Token neu.
+          await this.refreshTokens();
+        }
       }
       if (msg.command === 'PRIVMSG') {
         console.log('privmsg from', loginFromPrefix(msg.prefix), ':', msg.trailing);

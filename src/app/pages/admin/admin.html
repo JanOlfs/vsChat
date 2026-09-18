@@ -44,12 +44,6 @@
   }
 </section>
 
-<p class="muted">
-  Banner-Bilder: Querformat, Seitenverhältnis ca. 2:1 bis 3:1 (breiter als hoch), Motiv mittig
-  platzieren. Wird automatisch zugeschnitten/skaliert (CSS <code>cover</code>), exakte Pixelmaße
-  sind egal, nur Ausschnitt/Format wirken sich aus.
-</p>
-
 @if (categories.isLoading()) {
   <p>Lade Kategorien …</p>
 } @else if (categories.error()) {
@@ -62,7 +56,7 @@
         <th>Slug</th>
         <th>Bewerbungen</th>
         <th>Status</th>
-        <th>Banner</th>
+        <th>Banner (ca. 3:1)</th>
         <th></th>
       </tr>
     </thead>
@@ -136,9 +130,8 @@
     <input #descriptionInput type="text" />
   </label>
   <label>
-    Banner-Bild (optional)
+    Banner-Bild (optional, ca. 3:1)
     <input #bannerInput type="file" accept="image/*" />
-    <span class="muted">Querformat, ca. 2:1 bis 3:1</span>
   </label>
   <button type="submit">Anlegen</button>
 </form>

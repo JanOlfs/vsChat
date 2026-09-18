@@ -50,6 +50,16 @@ export class Admin {
     }
   }
 
+  protected async saveBanner(categoryId: string, bannerEl: HTMLInputElement): Promise<void> {
+    this.error.set(null);
+    try {
+      await this.categoryService.setCategoryBanner(categoryId, bannerEl.value.trim() || null);
+      this.categories.reload();
+    } catch {
+      this.error.set('Banner-URL konnte nicht gespeichert werden.');
+    }
+  }
+
   protected async resetCategory(categoryId: string): Promise<void> {
     if (!confirm('Wirklich alle Bewerbungen dieser Kategorie löschen? Das lässt sich nicht rückgängig machen.')) {
       return;
@@ -69,6 +79,7 @@ export class Admin {
     slugEl: HTMLInputElement,
     nameEl: HTMLInputElement,
     descriptionEl: HTMLInputElement,
+    bannerEl: HTMLInputElement,
   ): Promise<void> {
     event.preventDefault();
     this.error.set(null);
@@ -81,10 +92,16 @@ export class Admin {
     }
 
     try {
-      await this.categoryService.createCategory({ slug, name, description: descriptionEl.value.trim() || undefined });
+      await this.categoryService.createCategory({
+        slug,
+        name,
+        description: descriptionEl.value.trim() || undefined,
+        banner_url: bannerEl.value.trim() || undefined,
+      });
       slugEl.value = '';
       nameEl.value = '';
       descriptionEl.value = '';
+      bannerEl.value = '';
       this.categories.reload();
     } catch {
       this.error.set('Kategorie konnte nicht angelegt werden, ist der Slug schon vergeben?');

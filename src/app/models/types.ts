@@ -7,6 +7,7 @@ export interface Category {
   description: string | null;
   sort_order: number;
   is_open: boolean;
+  banner_url: string | null;
 }
 
 export interface CategoryWithCount extends Category {

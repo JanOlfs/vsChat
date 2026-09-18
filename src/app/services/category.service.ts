@@ -39,6 +39,7 @@ export class CategoryService {
     name: string;
     description?: string;
     sort_order?: number;
+    banner_url?: string;
   }): Promise<Category> {
     const { data, error } = await this.supabase.client
       .from('categories')
@@ -47,6 +48,7 @@ export class CategoryService {
         name: input.name,
         description: input.description ?? null,
         sort_order: input.sort_order ?? 0,
+        banner_url: input.banner_url ?? null,
       })
       .select('*')
       .single();
@@ -58,6 +60,13 @@ export class CategoryService {
 
   async setCategoryOpen(id: string, isOpen: boolean): Promise<void> {
     const { error } = await this.supabase.client.from('categories').update({ is_open: isOpen }).eq('id', id);
+    if (error) {
+      throw error;
+    }
+  }
+
+  async setCategoryBanner(id: string, bannerUrl: string | null): Promise<void> {
+    const { error } = await this.supabase.client.from('categories').update({ banner_url: bannerUrl }).eq('id', id);
     if (error) {
       throw error;
     }

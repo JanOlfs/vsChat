@@ -16,14 +16,26 @@
   } @else {
     <ul class="category-list">
       @for (category of categories.value(); track category.id) {
-        <li>
-          <a [routerLink]="['/kategorie', category.slug]">
-            <strong>{{ category.name }}</strong>
-            <span>{{ category.applicant_count }} Bewerbungen</span>
-            @if (!category.is_open) {
-              <span class="badge">geschlossen</span>
+        <li class="category-card" [class.expanded]="kategorie() === category.slug">
+          <button type="button" class="category-summary" (click)="toggleExpand(category.slug)">
+            <div class="category-info">
+              <strong>{{ category.name }}</strong>
+              <span>{{ category.applicant_count }} Bewerbungen</span>
+              @if (!category.is_open) {
+                <span class="badge">geschlossen</span>
+              }
+            </div>
+            @if (category.banner_url) {
+              <div class="category-banner" [style.background-image]="'url(' + category.banner_url + ')'"></div>
             }
-          </a>
+          </button>
+          <div class="category-expand">
+            <div class="category-expand-inner">
+              @if (kategorie() === category.slug) {
+                <app-category-detail [slug]="category.slug" />
+              }
+            </div>
+          </div>
         </li>
       }
     </ul>

@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, input, resource, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { checkBingoWinner } from '../../utils/bingo-win';
@@ -11,6 +12,7 @@ const POLL_INTERVAL_MS = 2000;
 })
 export class BingoPlay {
   private readonly bingoService = inject(BingoService);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
 
   readonly id = input.required<string>();
@@ -37,6 +39,10 @@ export class BingoPlay {
 
   protected get winner() {
     return checkBingoWinner(this.cells.value() ?? []);
+  }
+
+  protected goToArrange(): void {
+    void this.router.navigate(['/bingo', this.id(), 'arrange']);
   }
 
   protected get isPlayer(): boolean {

@@ -24,4 +24,12 @@ export class MatchService {
       throw error;
     }
   }
+
+  /** Nur Admin (RLS): z.B. um Testeinträge wieder zu entfernen. */
+  async deleteMatch(matchId: string): Promise<void> {
+    const { error } = await this.supabase.client.from('matches').delete().eq('id', matchId);
+    if (error) {
+      throw error;
+    }
+  }
 }

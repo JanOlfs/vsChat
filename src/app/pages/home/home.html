@@ -53,17 +53,11 @@
     <p role="alert">Ergebnisse konnten nicht geladen werden.</p>
   } @else {
     <ul class="simple-list">
-      @for (match of matches.value(); track match.id) {
+      @for (match of decidedMatches; track match.id) {
         <li>
           <span>
-            {{ match.category.name }}: Captnblacky vs. {{ match.profile.display_name }}
-            @if (match.winner === 'streamer') {
-              , Captnblacky hat gewonnen
-            } @else if (match.winner === 'challenger') {
-              , Chat hat gewonnen
-            } @else {
-              , Ergebnis steht noch aus
-            }
+            {{ match.category.name }}: Captnblacky vs. {{ match.profile.display_name }},
+            {{ match.winner === 'streamer' ? 'Captnblacky hat gewonnen' : 'Chat hat gewonnen' }}
           </span>
         </li>
       } @empty {

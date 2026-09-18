@@ -29,6 +29,11 @@ export class Home {
     loader: () => this.matchService.getMatches(),
   });
 
+  /** Nur Matches mit eingetragenem Ergebnis, offene Testeinträge sollen nicht öffentlich auftauchen. */
+  protected get decidedMatches() {
+    return (this.matches.value() ?? []).filter((match) => match.winner !== null);
+  }
+
   constructor() {
     // Bewerbungszahlen und Ergebnisliste live halten, ohne dass wer die Seite neu laden muss.
     const channel = this.supabase.client

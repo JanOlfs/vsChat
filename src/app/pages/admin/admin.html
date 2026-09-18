@@ -165,6 +165,7 @@
           >
             Chat hat gewonnen
           </button>
+          <button type="button" (click)="deleteMatch(match.id)">Löschen</button>
         </li>
       } @empty {
         <li class="muted">Noch keine Matches gespielt.</li>

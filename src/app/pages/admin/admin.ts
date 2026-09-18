@@ -238,4 +238,18 @@ export class Admin {
       this.error.set('Ergebnis konnte nicht gespeichert werden.');
     }
   }
+
+  protected async deleteMatch(matchId: string): Promise<void> {
+    if (!(await this.confirmDialog.ask('Dieses Match-Ergebnis wirklich löschen?'))) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      await this.matchService.deleteMatch(matchId);
+      this.matches.reload();
+    } catch (err) {
+      console.error(err);
+      this.error.set('Match konnte nicht gelöscht werden.');
+    }
+  }
 }

@@ -31,6 +31,9 @@ const RECONNECT_CHECK_MS = 2 * 60_000;
 // Twitch-Access-Tokens laufen üblicherweise nach ~4h ab, wir erneuern proaktiv
 // deutlich davor, damit es im laufenden Stream keinen stillen Verbindungsabriss gibt.
 const TOKEN_REFRESH_INTERVAL_MS = 3 * 60 * 60_000;
+// Mindestabstand zwischen zwei Verbindungsversuchen, verhindert eine enge
+// Reconnect-Schleife bei wiederholt fehlschlagenden Verbindungen.
+const MIN_RECONNECT_INTERVAL_MS = 5000;
 
 interface TokenState {
   access: string;
@@ -48,6 +51,7 @@ export class ChatBotDo implements DurableObject {
   private socket: WebSocket | null = null;
   private round: RoundState = EMPTY_ROUND;
   private tokens: TokenState | null = null;
+  private lastConnectAttempt = 0;
   private ready: Promise<void>;
 
   constructor(
@@ -121,6 +125,15 @@ export class ChatBotDo implements DurableObject {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return;
     }
+    // Verhindert eine enge Reconnect-Schleife (z.B. wenn Twitch die Verbindung
+    // sofort wieder ablehnt) und eine doppelte Verbindung durch zwei parallel
+    // laufende Aufrufe (fetch() + alarm() etwa gleichzeitig). Der Alarm holt
+    // einen echten Verbindungsverlust spätestens nach RECONNECT_CHECK_MS nach.
+    if (Date.now() - this.lastConnectAttempt < MIN_RECONNECT_INTERVAL_MS) {
+      return;
+    }
+    this.lastConnectAttempt = Date.now();
+
     if (!this.tokens) return; // ready ist noch nicht durchgelaufen, sollte durch await this.ready oben nicht passieren
     if (Date.now() - this.tokens.refreshedAt > TOKEN_REFRESH_INTERVAL_MS) {
       await this.refreshTokens();
@@ -134,13 +147,21 @@ export class ChatBotDo implements DurableObject {
     socket.addEventListener('message', (event) => {
       void this.onIrcData(String(event.data));
     });
+    // Sofort neu verbinden statt bis zu RECONNECT_CHECK_MS auf den nächsten
+    // Alarm zu warten, der Backoff oben schützt vor einer engen Schleife.
     socket.addEventListener('close', (event) => {
       console.log('irc socket closed', event.code, event.reason);
-      if (this.socket === socket) this.socket = null;
+      if (this.socket === socket) {
+        this.socket = null;
+        void this.ensureConnected();
+      }
     });
     socket.addEventListener('error', (event) => {
       console.error('irc socket error', event);
-      if (this.socket === socket) this.socket = null;
+      if (this.socket === socket) {
+        this.socket = null;
+        void this.ensureConnected();
+      }
     });
     this.socket = socket;
 
@@ -188,8 +209,8 @@ export class ChatBotDo implements DurableObject {
       if (msg.command === 'NOTICE') {
         console.log('irc notice:', msg.trailing);
         if (msg.trailing?.toLowerCase().includes('login authentication failed')) {
-          // Twitch trennt die Verbindung direkt danach selbst; der nächste Alarm
-          // (spätestens in RECONNECT_CHECK_MS) verbindet mit dem neuen Token neu.
+          // Twitch trennt die Verbindung direkt danach selbst, der close-Handler
+          // verbindet dann sofort neu, mit dem hier schon aufgefrischten Token.
           await this.refreshTokens();
         }
       }

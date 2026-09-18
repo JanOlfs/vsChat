@@ -212,9 +212,9 @@ export class BingoArrange {
 
   /**
    * Setzt eine Kategorie auf targetCell. Kommt sie von einem anderen Feld,
-   * wird dort verschoben bzw. mit der Zielkategorie getauscht. Die Reihenfolge
-   * der Einzel-Updates vermeidet dabei, dass eine Kategorie kurzzeitig auf
-   * zwei Feldern gleichzeitig steht (verletzt sonst den unique-Constraint).
+   * wird dort verschoben bzw. mit der Zielkategorie getauscht, über eine
+   * einzige atomare DB-Funktion statt mehrerer sequenzieller Requests (sonst
+   * spürbar laggy und kurzes Flackern über Realtime).
    */
   private async placeCategory(payload: DragPayload, targetCell: BingoCellWithDetails): Promise<void> {
     if (payload.fromCellId === targetCell.id) {
@@ -222,15 +222,9 @@ export class BingoArrange {
     }
     this.error.set(null);
     try {
-      if (!payload.fromCellId) {
-        await this.bingoService.assignCategoryToCell(targetCell.id, payload.categoryId);
-      } else if (targetCell.category_id) {
-        const targetCategoryId = targetCell.category_id;
-        await this.bingoService.assignCategoryToCell(targetCell.id, null);
-        await this.bingoService.assignCategoryToCell(payload.fromCellId, targetCategoryId);
-        await this.bingoService.assignCategoryToCell(targetCell.id, payload.categoryId);
+      if (payload.fromCellId) {
+        await this.bingoService.moveOrSwapCell(targetCell.id, payload.categoryId, payload.fromCellId);
       } else {
-        await this.bingoService.assignCategoryToCell(payload.fromCellId, null);
         await this.bingoService.assignCategoryToCell(targetCell.id, payload.categoryId);
       }
       this.cells.reload();

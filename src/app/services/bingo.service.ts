@@ -133,6 +133,22 @@ export class BingoService {
     }
   }
 
+  /**
+   * Verschiebt eine Kategorie von einem Feld aufs andere (oder tauscht, falls
+   * das Ziel schon belegt ist) über eine einzige atomare DB-Funktion statt
+   * mehrerer sequenzieller Updates, sonst spürbar laggy beim Ziehen.
+   */
+  async moveOrSwapCell(targetCellId: string, categoryId: string, sourceCellId: string): Promise<void> {
+    const { error } = await this.supabase.client.rpc('bingo_place_category', {
+      p_target_cell_id: targetCellId,
+      p_category_id: categoryId,
+      p_source_cell_id: sourceCellId,
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
   /** Nimmt alle Kategorien vom Grid, sie landen wieder im Pool. Löscht keine Kategorien. */
   async clearGrid(boardId: string): Promise<void> {
     const { error } = await this.supabase.client

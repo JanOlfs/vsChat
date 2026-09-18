@@ -69,8 +69,12 @@
           <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
           <td>
             <div class="banner-upload">
-              <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
-                <input #bannerInput type="file" accept="image/*" (change)="onBannerFileChange()" />
+              <div class="banner-picker">
+                <button type="button" class="banner-picker-upload" (click)="bannerInput.click()">Bild hochladen</button>
+                <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+                  Bild einfügen (Strg+V)
+                </div>
+                <input #bannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
               </div>
               @if (bannerInput.files?.[0]; as file) {
                 <p class="banner-filename">{{ file.name }}</p>
@@ -141,8 +145,12 @@
   <label>
     Banner-Bild (optional, ca. 5:1)
     <div class="banner-upload">
-      <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
-        <input #bannerInput type="file" accept="image/*" (change)="onBannerFileChange()" />
+      <div class="banner-picker">
+        <button type="button" class="banner-picker-upload" (click)="bannerInput.click()">Bild hochladen</button>
+        <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+          Bild einfügen (Strg+V)
+        </div>
+        <input #bannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
       </div>
       @if (bannerInput.files?.[0]; as file) {
         <p class="banner-filename">{{ file.name }}</p>

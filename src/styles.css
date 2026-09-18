@@ -321,25 +321,34 @@ main {
   color: var(--text-muted);
 }
 
-/* Datei auswählen oder Bild reinpasten (Strg+V), sobald die Zone fokussiert ist. */
-.paste-zone {
-  display: inline-block;
-  padding: 0.3rem 0.5rem;
-  border: 1px dashed var(--border);
+/* Zweigeteilter Banner-Picker: links Datei auswählen, rechts reinklicken und Bild reinpasten (Strg+V). */
+.banner-picker {
+  display: inline-flex;
+  border: 1px solid var(--border);
   border-radius: 0.35rem;
+  overflow: hidden;
 }
 
-.paste-zone:focus {
-  outline: none;
-  border-color: var(--blue);
+.banner-picker-upload {
+  margin: 0;
+  border: none;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
 }
 
-.paste-zone::after {
-  content: 'oder Bild einfügen (Strg+V)';
-  display: block;
-  font-size: 0.75em;
+.banner-picker-paste {
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.85em;
   color: var(--text-muted);
-  margin-top: 0.2rem;
+  cursor: text;
+}
+
+.banner-picker-paste:focus {
+  outline: none;
+  color: var(--text);
+  background: var(--bg-elevated);
 }
 
 .banner-upload {

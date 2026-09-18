@@ -52,8 +52,21 @@ export class BingoArrange {
     });
   }
 
+  protected readonly overlayLinkCopied = signal(false);
+
   protected get overlayUrl(): string {
     return `${window.location.origin}/bingo/${this.id()}/overlay`;
+  }
+
+  protected async copyOverlayLink(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.overlayUrl);
+      this.overlayLinkCopied.set(true);
+      setTimeout(() => this.overlayLinkCopied.set(false), 1500);
+    } catch (err) {
+      console.error(err);
+      this.error.set('Link konnte nicht kopiert werden.');
+    }
   }
 
   protected get allCellsFilled(): boolean {

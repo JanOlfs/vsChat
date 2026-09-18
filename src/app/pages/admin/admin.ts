@@ -2,6 +2,7 @@ import { Component, inject, resource, signal } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
 import { RoundControlService } from '../../services/round-control.service';
+import { LiveRoundService } from '../../services/live-round.service';
 import type { CategoryWithCount } from '../../models/types';
 
 @Component({
@@ -12,9 +13,15 @@ export class Admin {
   private readonly categoryService = inject(CategoryService);
   private readonly applicationService = inject(ApplicationService);
   private readonly roundControl = inject(RoundControlService);
+  private readonly liveRoundService = inject(LiveRoundService);
 
   // Läuft gerade eine Runden-Steuerungs-Aktion (Check-in/Voting), Buttons währenddessen sperren.
   protected readonly roundBusy = signal(false);
+
+  // Aktueller Stand der Check-in/Voting-Runde, damit die Buttons nur passend zur Phase erscheinen.
+  protected readonly liveRound = resource({
+    loader: () => this.liveRoundService.getLiveRound(),
+  });
 
   protected readonly categories = resource({
     loader: () => this.categoryService.getCategories(),
@@ -76,6 +83,7 @@ export class Admin {
     this.roundBusy.set(true);
     try {
       await action();
+      this.liveRound.reload();
     } catch {
       this.error.set(failureMessage);
     } finally {

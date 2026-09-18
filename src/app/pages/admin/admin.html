@@ -11,9 +11,36 @@
     dieselbe Aktion beim Bot aus, inklusive Ansage im Chat. "Check-in öffnen" steht pro Kategorie
     unten in der Tabelle.
   </p>
-  <button type="button" [disabled]="roundBusy()" (click)="closeCheckin()">Check-in schließen</button>
-  <button type="button" [disabled]="roundBusy()" (click)="startVote()">Voting starten</button>
-  <button type="button" [disabled]="roundBusy()" (click)="closeVote()">Voting beenden</button>
+
+  @if (liveRound.isLoading()) {
+    <p>Lade Rundenstatus …</p>
+  } @else if (liveRound.error()) {
+    <p role="alert">Rundenstatus konnte nicht geladen werden.</p>
+  } @else if (liveRound.value(); as round) {
+    @if (round.category_id) {
+      <p>
+        Aktive Runde: <strong>{{ round.category?.name }}</strong> –
+        @if (round.phase === 'checkin') {
+          Check-in läuft
+        } @else if (round.phase === 'voting') {
+          Voting läuft
+        } @else {
+          Check-in geschlossen, bereit fürs Voting
+        }
+      </p>
+      @if (round.phase === 'checkin') {
+        <button type="button" [disabled]="roundBusy()" (click)="closeCheckin()">Check-in schließen</button>
+      }
+      @if (round.phase !== 'checkin' && round.phase !== 'voting') {
+        <button type="button" [disabled]="roundBusy()" (click)="startVote()">Voting starten</button>
+      }
+      @if (round.phase === 'voting') {
+        <button type="button" [disabled]="roundBusy()" (click)="closeVote()">Voting beenden</button>
+      }
+    } @else {
+      <p class="muted">Keine aktive Runde. Bei einer Kategorie unten auf "Check-in öffnen" klicken.</p>
+    }
+  }
 </section>
 
 @if (categories.isLoading()) {
@@ -50,9 +77,11 @@
             <button type="button" (click)="manageApplicants(category.id)">
               {{ selectedCategoryId() === category.id ? 'Bewerber ausblenden' : 'Bewerber verwalten' }}
             </button>
-            <button type="button" [disabled]="roundBusy() || !category.is_open" (click)="openCheckin(category.slug)">
-              Check-in öffnen
-            </button>
+            @if (!liveRound.value()?.category_id) {
+              <button type="button" [disabled]="roundBusy() || !category.is_open" (click)="openCheckin(category.slug)">
+                Check-in öffnen
+              </button>
+            }
           </td>
         </tr>
       }

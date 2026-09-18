@@ -143,7 +143,7 @@ input:focus {
 
 main {
   padding: 1.5rem;
-  max-width: 60rem;
+  max-width: 90rem;
   margin: 0 auto;
 }
 
@@ -442,13 +442,13 @@ app-overlay .overlay-panel li.applicant.checked-in {
 }
 
 .bingo-arrange-layout .bingo-grid {
-  max-width: 34rem;
+  max-width: 42rem;
   flex-shrink: 0;
 }
 
 .bingo-pool-panel {
   flex: 1;
-  min-width: 16rem;
+  min-width: 20rem;
 }
 
 .bingo-admin-controls {

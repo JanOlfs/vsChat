@@ -15,8 +15,13 @@
     <div class="bingo-arrange-layout">
       <div class="bingo-grid">
         @for (cell of cells.value(); track cell.id) {
-          <div class="bingo-cell" [class.filled]="cell.category_id" (dragover)="$event.preventDefault()" (drop)="onDrop($event, cell)">
-            {{ cell.category?.label ?? '—' }}
+          <div
+            class="bingo-cell"
+            [class.filled]="cell.category_id"
+            (dragover)="$event.preventDefault()"
+            (drop)="onDrop($event, cell)"
+          >
+            <span class="bingo-cell-label" appAutoFitText>{{ cell.category?.label ?? '—' }}</span>
             @if (cell.category_id) {
               <span class="bingo-tile-remove" (click)="clearCell(cell)">×</span>
             }

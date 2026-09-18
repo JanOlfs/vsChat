@@ -3,11 +3,13 @@ import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { checkBingoWinner } from '../../utils/bingo-win';
+import { AutoFitTextDirective } from '../../directives/auto-fit-text.directive';
 
 const POLL_INTERVAL_MS = 2000;
 
 @Component({
   selector: 'app-bingo-play',
+  imports: [AutoFitTextDirective],
   templateUrl: './bingo-play.html',
 })
 export class BingoPlay {

@@ -1,12 +1,14 @@
 import { Component, DestroyRef, inject, input, resource } from '@angular/core';
 import { BingoService } from '../../services/bingo.service';
 import { checkBingoWinner } from '../../utils/bingo-win';
+import { AutoFitTextDirective } from '../../directives/auto-fit-text.directive';
 
 const POLL_INTERVAL_MS = 2000;
 
 /** Browser-Source für OBS, analog zu overlay.ts: transparenter Hintergrund, kein Shell-Layout. */
 @Component({
   selector: 'app-bingo-overlay',
+  imports: [AutoFitTextDirective],
   templateUrl: './bingo-overlay.html',
 })
 export class BingoOverlay {

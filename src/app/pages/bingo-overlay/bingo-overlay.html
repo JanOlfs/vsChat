@@ -11,7 +11,7 @@
             [class.claimed-b]="cell.claimed_by && cell.claimed_by !== b.created_by"
             [class.winning-line]="winner?.line?.includes(cell.position)"
           >
-            {{ cell.category?.label ?? '' }}
+            <span class="bingo-cell-label" appAutoFitText>{{ cell.category?.label ?? '' }}</span>
           </div>
         }
       </div>

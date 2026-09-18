@@ -30,7 +30,7 @@
         [disabled]="!!cell.claimed_by || board.value()?.status !== 'active' || !isPlayer || !!winner"
         (click)="claim(cell)"
       >
-        {{ cell.category?.label ?? '—' }}
+        <span class="bingo-cell-label" appAutoFitText>{{ cell.category?.label ?? '—' }}</span>
       </button>
     }
   </div>

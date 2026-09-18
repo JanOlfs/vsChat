@@ -476,17 +476,13 @@ app-overlay .overlay-panel li.applicant.checked-in {
 }
 
 .bingo-cell {
-  overflow: hidden;
-  overflow-wrap: anywhere;
+  /* Ohne das hier zählt die Grid-Zeilenhöhe den unbeschnittenen Inhalt mit
+     und wächst über das quadratische Format hinaus. */
+  min-width: 0;
+  min-height: 0;
   position: relative;
   aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
   padding: 0.5rem;
-  font-size: 1.1rem;
-  line-height: 1.25;
   text-transform: none;
   font-family: system-ui, sans-serif;
   letter-spacing: normal;
@@ -494,6 +490,22 @@ app-overlay .overlay-panel li.applicant.checked-in {
   border: 1px dashed var(--border);
   color: var(--text);
   margin: 0;
+}
+
+/* Eigenes Element fürs Label: appAutoFitText misst hier sauber scrollHeight
+   gegen clientHeight, direkt auf dem Flex-Element mit overflow:hidden war
+   die Messung unzuverlässig (scrollHeight == clientHeight trotz Überlauf). */
+.bingo-cell-label {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 1.1rem;
+  line-height: 1.25;
 }
 
 .bingo-cell.filled {
@@ -532,7 +544,7 @@ app-overlay .overlay-panel li.applicant.checked-in {
   background: #1e3a5f;
 }
 
-.bingo-overlay-panel .bingo-cell {
+.bingo-overlay-panel .bingo-cell-label {
   font-size: 0.9rem;
 }
 
@@ -546,6 +558,9 @@ app-overlay .overlay-panel li.applicant.checked-in {
 
 .bingo-tile {
   position: relative;
+  max-width: 14rem;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   padding: 0.6rem 1.75rem 0.6rem 0.9rem;
   font-size: 1.05rem;
   background: var(--bg-elevated-2);
@@ -558,6 +573,7 @@ app-overlay .overlay-panel li.applicant.checked-in {
   position: absolute;
   top: 0.15rem;
   right: 0.3rem;
+  font-size: 0.85rem;
   color: var(--red);
   font-weight: bold;
   cursor: pointer;

@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, input, resource, signal } from '@angular
 import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
+import { AutoFitTextDirective } from '../../directives/auto-fit-text.directive';
 import type { BingoCellWithDetails } from '../../models/types';
 
 const POLL_INTERVAL_MS = 2000;
@@ -9,6 +10,7 @@ const UNIQUE_VIOLATION = '23505';
 
 @Component({
   selector: 'app-bingo-arrange',
+  imports: [AutoFitTextDirective],
   templateUrl: './bingo-arrange.html',
 })
 export class BingoArrange {

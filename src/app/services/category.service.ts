@@ -71,4 +71,15 @@ export class CategoryService {
       throw error;
     }
   }
+
+  /** Lädt das Bild in den `category-banners`-Bucket hoch und gibt die öffentliche URL zurück. */
+  async uploadBanner(categorySlug: string, file: File): Promise<string> {
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const path = `${categorySlug}-${Date.now()}.${ext}`;
+    const { error } = await this.supabase.client.storage.from('category-banners').upload(path, file);
+    if (error) {
+      throw error;
+    }
+    return this.supabase.client.storage.from('category-banners').getPublicUrl(path).data.publicUrl;
+  }
 }

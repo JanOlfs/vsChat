@@ -16,7 +16,7 @@
         <th>Slug</th>
         <th>Bewerbungen</th>
         <th>Status</th>
-        <th>Banner-URL</th>
+        <th>Banner</th>
         <th></th>
       </tr>
     </thead>
@@ -28,8 +28,8 @@
           <td>{{ category.applicant_count }}</td>
           <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
           <td>
-            <input #bannerInput type="text" [value]="category.banner_url ?? ''" placeholder="https://…" />
-            <button type="button" (click)="saveBanner(category.id, bannerInput)">Speichern</button>
+            <input #bannerInput type="file" accept="image/*" />
+            <button type="button" (click)="saveBanner(category, bannerInput)">Hochladen</button>
           </td>
           <td>
             <button type="button" (click)="toggleOpen(category)">
@@ -85,8 +85,8 @@
     <input #descriptionInput type="text" />
   </label>
   <label>
-    Banner-URL (optional)
-    <input #bannerInput type="text" placeholder="https://…" />
+    Banner-Bild (optional)
+    <input #bannerInput type="file" accept="image/*" />
   </label>
   <button type="submit">Anlegen</button>
 </form>

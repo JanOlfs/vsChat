@@ -50,13 +50,19 @@ export class Admin {
     }
   }
 
-  protected async saveBanner(categoryId: string, bannerEl: HTMLInputElement): Promise<void> {
+  protected async saveBanner(category: CategoryWithCount, bannerEl: HTMLInputElement): Promise<void> {
+    const file = bannerEl.files?.[0];
+    if (!file) {
+      return;
+    }
     this.error.set(null);
     try {
-      await this.categoryService.setCategoryBanner(categoryId, bannerEl.value.trim() || null);
+      const url = await this.categoryService.uploadBanner(category.slug, file);
+      await this.categoryService.setCategoryBanner(category.id, url);
+      bannerEl.value = '';
       this.categories.reload();
     } catch {
-      this.error.set('Banner-URL konnte nicht gespeichert werden.');
+      this.error.set('Banner konnte nicht hochgeladen werden.');
     }
   }
 
@@ -92,12 +98,18 @@ export class Admin {
     }
 
     try {
-      await this.categoryService.createCategory({
+      const category = await this.categoryService.createCategory({
         slug,
         name,
         description: descriptionEl.value.trim() || undefined,
-        banner_url: bannerEl.value.trim() || undefined,
       });
+
+      const file = bannerEl.files?.[0];
+      if (file) {
+        const url = await this.categoryService.uploadBanner(slug, file);
+        await this.categoryService.setCategoryBanner(category.id, url);
+      }
+
       slugEl.value = '';
       nameEl.value = '';
       descriptionEl.value = '';

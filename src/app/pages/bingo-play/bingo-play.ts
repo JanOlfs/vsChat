@@ -2,10 +2,13 @@ import { Component, DestroyRef, effect, inject, input, resource, signal } from '
 import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { checkBingoWinner } from '../../utils/bingo-win';
 import { AutoFitTextDirective } from '../../directives/auto-fit-text.directive';
 
-const POLL_INTERVAL_MS = 2000;
+// Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
+// Verbindung mal hängt (z.B. Laptop kurz im Standby).
+const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-bingo-play',
@@ -15,6 +18,7 @@ const POLL_INTERVAL_MS = 2000;
 export class BingoPlay {
   private readonly bingoService = inject(BingoService);
   private readonly router = inject(Router);
+  private readonly supabase = inject(SupabaseService);
   protected readonly auth = inject(AuthService);
 
   readonly id = input.required<string>();
@@ -32,10 +36,31 @@ export class BingoPlay {
   });
 
   constructor() {
+    // In einem effect(), weil das required input `id` beim Konstruktor-Lauf
+    // noch keinen Wert hat, per onCleanup wird der Channel bei einer
+    // id-Änderung oder Komponenten-Zerstörung sauber wieder abgebaut.
+    effect((onCleanup) => {
+      const boardId = this.id();
+      const channel = this.supabase.client
+        .channel(`bingo-play-${boardId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'bingo_boards', filter: `id=eq.${boardId}` },
+          () => this.board.reload(),
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'bingo_cells', filter: `board_id=eq.${boardId}` },
+          () => this.cells.reload(),
+        )
+        .subscribe();
+      onCleanup(() => void this.supabase.client.removeChannel(channel));
+    });
+
     const interval = setInterval(() => {
       this.board.reload();
       this.cells.reload();
-    }, POLL_INTERVAL_MS);
+    }, FALLBACK_POLL_INTERVAL_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(interval));
 
     // Sobald jemand (der Admin) zurück auf Setup gesetzt hat, folgt auch der

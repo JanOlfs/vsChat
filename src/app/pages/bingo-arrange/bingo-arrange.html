@@ -55,7 +55,9 @@
           Spiel starten{{ allCellsFilled ? '' : ' (erst alle 25 Felder befüllen)' }}
         </button>
       }
-      <button type="button" (click)="resetBoard()">Zurücksetzen</button>
+      @if (b.status === 'setup') {
+        <button type="button" (click)="clearGrid()">Grid leeren</button>
+      }
       <button type="button" (click)="deleteBoard()">Löschen</button>
       <p>
         Overlay-Link: <code>{{ overlayUrl }}</code>

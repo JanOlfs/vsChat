@@ -66,6 +66,21 @@ export class BingoPlay {
     void this.router.navigate(['/bingo', this.id(), 'arrange']);
   }
 
+  /** Admin-Aktion: nur die Claims löschen, Layout und Status (aktiv) bleiben, für eine schnelle Revanche. */
+  protected async resetClaims(): Promise<void> {
+    if (!confirm('Alle Claims auf dieser Spielfläche wirklich löschen? Das Board bleibt so angeordnet.')) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      await this.bingoService.clearClaims(this.id());
+      this.cells.reload();
+    } catch (err) {
+      console.error(err);
+      this.error.set('Konnte nicht zurückgesetzt werden.');
+    }
+  }
+
   protected get isPlayer(): boolean {
     const profile = this.auth.currentProfile();
     const board = this.board.value();

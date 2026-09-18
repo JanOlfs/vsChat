@@ -62,14 +62,19 @@ export class BingoService {
 
   /** Setzt alle Claims zurück und schickt das Board zurück in den Setup-Modus, Anordnung bleibt erhalten. */
   async resetBoard(id: string): Promise<void> {
-    const { error: cellsError } = await this.supabase.client
+    await this.clearClaims(id);
+    await this.setBoardStatus(id, 'setup');
+  }
+
+  /** Nur die Claims löschen, Status bleibt wie er ist (z.B. für eine Revanche mit demselben Board). */
+  async clearClaims(id: string): Promise<void> {
+    const { error } = await this.supabase.client
       .from('bingo_cells')
       .update({ claimed_by: null, claimed_at: null })
       .eq('board_id', id);
-    if (cellsError) {
-      throw cellsError;
+    if (error) {
+      throw error;
     }
-    await this.setBoardStatus(id, 'setup');
   }
 
   async deleteBoard(id: string): Promise<void> {
@@ -123,6 +128,17 @@ export class BingoService {
       .from('bingo_cells')
       .update({ category_id: categoryId })
       .eq('id', cellId);
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** Nimmt alle Kategorien vom Grid, sie landen wieder im Pool. Löscht keine Kategorien. */
+  async clearGrid(boardId: string): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('bingo_cells')
+      .update({ category_id: null })
+      .eq('board_id', boardId);
     if (error) {
       throw error;
     }

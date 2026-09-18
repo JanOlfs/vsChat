@@ -139,18 +139,18 @@ export class BingoArrange {
     }
   }
 
-  protected async resetBoard(): Promise<void> {
-    if (!confirm('Spielfläche wirklich zurücksetzen? Alle Claims gehen verloren, die Anordnung bleibt.')) {
+  /** Nimmt alle Kategorien vom Grid (zurück in den Pool), löscht keine Kategorien. */
+  protected async clearGrid(): Promise<void> {
+    if (!confirm('Wirklich alle Felder leeren? Die Kategorien selbst bleiben erhalten, landen nur wieder im Pool.')) {
       return;
     }
     this.error.set(null);
     try {
-      await this.bingoService.resetBoard(this.id());
-      this.board.reload();
+      await this.bingoService.clearGrid(this.id());
       this.cells.reload();
     } catch (err) {
       console.error(err);
-      this.error.set('Spiel konnte nicht zurückgesetzt werden.');
+      this.error.set('Grid konnte nicht geleert werden.');
     }
   }
 

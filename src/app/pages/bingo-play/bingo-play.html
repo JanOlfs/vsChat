@@ -37,5 +37,6 @@
 }
 
 @if (auth.currentProfile()?.is_admin) {
+  <button type="button" (click)="resetClaims()">Zurücksetzen</button>
   <button type="button" (click)="goToArrange()">Zurück zum Anordnen</button>
 }

@@ -107,6 +107,13 @@ export class Admin {
     void this.runRoundAction(() => this.roundControl.closeVote(), 'Voting konnte nicht beendet werden.');
   }
 
+  protected cancelRound(): void {
+    if (!confirm('Aktuelle Runde wirklich abbrechen? Check-in/Voting-Fortschritt geht verloren.')) {
+      return;
+    }
+    void this.runRoundAction(() => this.roundControl.cancelRound(), 'Runde konnte nicht abgebrochen werden.');
+  }
+
   protected async resetCategory(categoryId: string): Promise<void> {
     if (!confirm('Wirklich alle Bewerbungen dieser Kategorie löschen? Das lässt sich nicht rückgängig machen.')) {
       return;

@@ -7,7 +7,7 @@ export { ChatBotDo };
 // Vom Admin-Panel aufrufbare Runden-Steuerung, als Alternative zu den
 // Chat-Befehlen. Führt intern dieselben DO-Methoden aus (inkl. Chat-Ansage),
 // nur eben per Klick statt per !opencheckin im Chat.
-const ADMIN_ROUTES = new Set(['/opencheckin', '/closecheckin', '/startvote', '/closevote']);
+const ADMIN_ROUTES = new Set(['/opencheckin', '/closecheckin', '/startvote', '/closevote', '/cancelround']);
 
 function stub(env: Env) {
   const id = env.CHAT_BOT.idFromName('main');

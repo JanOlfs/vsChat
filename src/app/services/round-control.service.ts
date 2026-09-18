@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { environment } from '../../environments/environment';
 
-type RoundAction = 'opencheckin' | 'closecheckin' | 'startvote' | 'closevote';
+type RoundAction = 'opencheckin' | 'closecheckin' | 'startvote' | 'closevote' | 'cancelround';
 
 /**
  * Ruft die Admin-Endpunkte des Chatbot-Workers auf (Alternative zu den
@@ -28,6 +28,10 @@ export class RoundControlService {
 
   async closeVote(): Promise<void> {
     await this.call('closevote');
+  }
+
+  async cancelRound(): Promise<void> {
+    await this.call('cancelround');
   }
 
   private async call(action: RoundAction, body?: unknown): Promise<void> {

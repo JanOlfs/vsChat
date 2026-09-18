@@ -15,10 +15,17 @@ vorher einspielen).
 4. `!startvote` (Mod) öffnet das Voting unter den Eingecheckten.
 5. `!vote <Twitch-Name>` (jeder Zuschauer) stimmt ab, spätere Stimme überschreibt die vorherige.
 6. `!closevote` (Mod) wertet aus, postet den Gewinner im Chat und schreibt eine Zeile in `matches`.
-7. `!botstatus` (Mod) zeigt Phase/Kategorie/Anzahl Eingecheckter, nützlich solange es kein Admin-Panel gibt.
+7. `!cancelround` (Mod) bricht die aktuelle Runde ab, egal in welcher Phase, ohne Ergebnis zu
+   speichern (kein `matches`-Eintrag). Gibt die Kategorie wieder frei, damit anderswo (oder erneut
+   hier) ein Check-in geöffnet werden kann.
+8. `!botstatus` (Mod) zeigt Phase/Kategorie/Anzahl Eingecheckter, nützlich solange es kein Admin-Panel gibt.
 
 Bei Gleichstand gewinnt der zuerst eingecheckte Kandidat (kein Losverfahren,
 `ponytail`-Kommentar dazu im Code).
+
+Alle Befehle außer `!checkin`/`!vote` gibt es auch als Admin-Panel-Button (Runden-Steuerung),
+sowohl im Panel als auch im Chat lösen sie denselben Code beim Bot aus, siehe
+[../src/app/services/round-control.service.ts](../src/app/services/round-control.service.ts).
 
 ## Setup
 

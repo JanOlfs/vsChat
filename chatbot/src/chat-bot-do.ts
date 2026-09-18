@@ -95,6 +95,9 @@ export class ChatBotDo implements DurableObject {
         case '/closevote':
           await this.closeVote();
           break;
+        case '/cancelround':
+          await this.cancelRound();
+          break;
         default:
           break; // Keepalive-Ping, kein Kommando.
       }
@@ -232,6 +235,9 @@ export class ChatBotDo implements DurableObject {
         break;
       case 'closevote':
         if (isMod) await this.closeVote();
+        break;
+      case 'cancelround':
+        if (isMod) await this.cancelRound();
         break;
       case 'botstatus':
         if (isMod) this.say(this.statusText());
@@ -374,6 +380,16 @@ export class ChatBotDo implements DurableObject {
     this.round = EMPTY_ROUND;
     await this.persist();
     await this.syncLiveRound();
+  }
+
+  /** Bricht die aktuelle Runde ab, egal in welcher Phase, ohne Ergebnis zu speichern. */
+  private async cancelRound(): Promise<void> {
+    if (!this.round.categoryId) {
+      this.say('Keine aktive Runde.');
+      return;
+    }
+    this.say(`Runde für ${this.round.categorySlug} abgebrochen.`);
+    await this.resetRound();
   }
 
   private async persist(): Promise<void> {

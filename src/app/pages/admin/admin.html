@@ -7,9 +7,9 @@
 <section class="admin-applicants">
   <h2>Runden-Steuerung</h2>
   <p class="muted">
-    Alternative zu den Chat-Befehlen (!opencheckin, !closecheckin, !startvote, !closevote), löst
-    dieselbe Aktion beim Bot aus, inklusive Ansage im Chat. "Check-in öffnen" steht pro Kategorie
-    unten in der Tabelle.
+    Alternative zu den Chat-Befehlen (!opencheckin, !closecheckin, !startvote, !closevote,
+    !cancelround), löst dieselbe Aktion beim Bot aus, inklusive Ansage im Chat. "Check-in öffnen"
+    steht pro Kategorie unten in der Tabelle.
   </p>
 
   @if (liveRound.isLoading()) {
@@ -37,6 +37,7 @@
       @if (round.phase === 'voting') {
         <button type="button" [disabled]="roundBusy()" (click)="closeVote()">Voting beenden</button>
       }
+      <button type="button" [disabled]="roundBusy()" (click)="cancelRound()">Runde abbrechen</button>
     } @else {
       <p class="muted">Keine aktive Runde. Bei einer Kategorie unten auf "Check-in öffnen" klicken.</p>
     }

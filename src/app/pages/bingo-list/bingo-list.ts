@@ -1,8 +1,10 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, DestroyRef, inject, resource, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import type { BingoBoard } from '../../models/types';
+
+const POLL_INTERVAL_MS = 2000;
 
 @Component({
   selector: 'app-bingo-list',
@@ -22,6 +24,13 @@ export class BingoList {
     },
     loader: ({ params }) => this.bingoService.getMyBoards(params.profileId, params.twitchLogin),
   });
+
+  constructor() {
+    // Damit auch Leute, die schon auf der Übersicht sitzen, mitbekommen, wenn
+    // anderswo eine Spielfläche angelegt oder gelöscht wird.
+    const interval = setInterval(() => this.boards.reload(), POLL_INTERVAL_MS);
+    inject(DestroyRef).onDestroy(() => clearInterval(interval));
+  }
 
   /** Solange die Spielfläche im Setup ist, geht's zum Anordnen, danach zum Spielen. */
   protected goToBoard(board: BingoBoard): void {

@@ -90,19 +90,28 @@ export class BingoPlay {
     return profile.id === board.created_by || profile.twitch_login.toLowerCase() === board.opponent_twitch_login.toLowerCase();
   }
 
+  /** Klick auf eine leere Zelle claimt sie, Klick auf die eigene macht sie wieder neutral. */
   protected async claim(cell: { id: string; claimed_by: string | null }): Promise<void> {
     const profile = this.auth.currentProfile();
     const board = this.board.value();
-    if (!profile || !board || board.status !== 'active' || cell.claimed_by || !this.isPlayer || this.winner) {
+    if (!profile || !board || board.status !== 'active' || !this.isPlayer || this.winner) {
       return;
     }
+    if (cell.claimed_by && cell.claimed_by !== profile.id) {
+      return; // fremder Claim, nicht anfassbar
+    }
+
     this.error.set(null);
     try {
-      await this.bingoService.claimCell(cell.id, profile.id);
+      if (cell.claimed_by === profile.id) {
+        await this.bingoService.unclaimCell(cell.id);
+      } else {
+        await this.bingoService.claimCell(cell.id, profile.id);
+      }
       this.cells.reload();
     } catch (err) {
       console.error(err);
-      this.error.set('Feld ist schon vergeben oder konnte nicht geclaimt werden.');
+      this.error.set('Feld konnte nicht geändert werden.');
       this.cells.reload();
     }
   }

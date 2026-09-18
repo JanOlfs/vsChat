@@ -159,4 +159,15 @@ export class BingoService {
       throw new Error('Feld ist schon vergeben.');
     }
   }
+
+  /** Gibt eine eigene Zelle wieder frei. RLS lässt fremde Claims hier nicht zu. */
+  async unclaimCell(cellId: string): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('bingo_cells')
+      .update({ claimed_by: null, claimed_at: null })
+      .eq('id', cellId);
+    if (error) {
+      throw error;
+    }
+  }
 }

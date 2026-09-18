@@ -134,11 +134,12 @@ export class BingoArrange {
     this.error.set(null);
     try {
       await this.bingoService.setBoardStatus(this.id(), 'active');
-      this.board.reload();
     } catch (err) {
       console.error(err);
       this.error.set('Spiel konnte nicht gestartet werden.');
+      return;
     }
+    this.goToPlay();
   }
 
   /** Nimmt alle Kategorien vom Grid (zurück in den Pool), löscht keine Kategorien. */

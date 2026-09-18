@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, resource, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, resource, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
@@ -35,13 +35,34 @@ export class BingoPlay {
       this.cells.reload();
     }, POLL_INTERVAL_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(interval));
+
+    // Sobald jemand (der Admin) zurück auf Setup gesetzt hat, folgt auch der
+    // andere Spieler automatisch in den Anordnungsmodus, ohne selbst klicken
+    // zu müssen.
+    effect(() => {
+      if (this.board.value()?.status === 'setup') {
+        void this.router.navigate(['/bingo', this.id(), 'arrange']);
+      }
+    });
   }
 
   protected get winner() {
     return checkBingoWinner(this.cells.value() ?? []);
   }
 
-  protected goToArrange(): void {
+  /** Admin-Aktion: Claims zurücksetzen, Status zurück auf Setup, dann selbst zum Anordnen wechseln. */
+  protected async goToArrange(): Promise<void> {
+    if (!confirm('Zurück zum Anordnen? Alle Claims auf dieser Spielfläche gehen dabei verloren.')) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      await this.bingoService.resetBoard(this.id());
+    } catch (err) {
+      console.error(err);
+      this.error.set('Konnte nicht zurückgesetzt werden.');
+      return;
+    }
     void this.router.navigate(['/bingo', this.id(), 'arrange']);
   }
 

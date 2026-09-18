@@ -10,14 +10,6 @@
     <p class="muted">Du bist nicht Teil dieser Spielfläche, nur Zuschauer-Ansicht.</p>
   }
 
-  @if (b.status === 'setup') {
-    <p role="alert">Die Spielfläche ist (wieder) im Bearbeitungsmodus, hier ist noch nichts zu claimen.</p>
-  }
-
-  @if (auth.currentProfile()?.is_admin) {
-    <button type="button" (click)="goToArrange()">Zurück zum Anordnen</button>
-  }
-
   @if (winner; as w) {
     <p role="alert">
       Bingo! {{ w.profileId === b.created_by ? b.created_by_profile?.display_name : b.opponent_twitch_login }} hat
@@ -42,4 +34,8 @@
       </button>
     }
   </div>
+}
+
+@if (auth.currentProfile()?.is_admin) {
+  <button type="button" (click)="goToArrange()">Zurück zum Anordnen</button>
 }

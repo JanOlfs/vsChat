@@ -12,15 +12,15 @@
           <div
             class="bingo-cell"
             [class.filled]="cell.category_id"
-            [class.drop-target]="selectedCategoryId()"
+            [class.drop-target]="selectedSource() && selectedSource()?.fromCellId !== cell.id"
+            [class.picked-up]="selectedSource()?.fromCellId === cell.id"
+            [draggable]="!!cell.category_id"
+            (dragstart)="onCellDragStart($event, cell)"
             (dragover)="$event.preventDefault()"
             (drop)="onDrop($event, cell)"
             (click)="onCellClick(cell)"
           >
             <span class="bingo-cell-label" appAutoFitText>{{ cell.category?.label ?? '—' }}</span>
-            @if (cell.category_id) {
-              <span class="bingo-tile-remove" (click)="$event.stopPropagation(); clearCell(cell)">×</span>
-            }
           </div>
         }
       </div>
@@ -28,17 +28,17 @@
       <div class="bingo-pool-panel">
         <h2>Kategorien-Pool</h2>
         <p class="muted">
-          Kachel ins Feld ziehen (oder antippen, dann ein Feld antippen). Platzierte Kategorien verschwinden hier aus
-          der Liste.
+          Kachel ins Feld ziehen, auch platzierte Kacheln lassen sich verschieben oder tauschen. Zum Entfernen zurück
+          in diese Liste ziehen. Auf Touch-Geräten: antippen statt ziehen.
         </p>
-        <div class="bingo-pool">
+        <div class="bingo-pool" (dragover)="$event.preventDefault()" (drop)="onPoolDrop($event)" (click)="onPoolAreaClick()">
           @for (category of unassignedCategories; track category.id) {
             <div
               class="bingo-tile"
-              [class.selected]="selectedCategoryId() === category.id"
+              [class.selected]="selectedSource()?.categoryId === category.id && !selectedSource()?.fromCellId"
               draggable="true"
-              (dragstart)="onDragStart($event, category.id)"
-              (click)="onPoolTileClick(category.id)"
+              (dragstart)="onPoolDragStart($event, category.id)"
+              (click)="$event.stopPropagation(); onPoolTileClick(category.id)"
             >
               {{ category.label }}
               <span class="bingo-tile-remove" (click)="$event.stopPropagation(); deleteCategory(category.id)">×</span>

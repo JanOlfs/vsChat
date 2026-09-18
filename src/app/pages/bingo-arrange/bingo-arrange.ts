@@ -12,6 +12,11 @@ import type { BingoCellWithDetails } from '../../models/types';
 const FALLBACK_POLL_INTERVAL_MS = 30000;
 const UNIQUE_VIOLATION = '23505';
 
+interface DragPayload {
+  categoryId: string;
+  fromCellId?: string;
+}
+
 @Component({
   selector: 'app-bingo-arrange',
   imports: [AutoFitTextDirective],
@@ -119,41 +124,115 @@ export class BingoArrange {
     return (this.categories.value() ?? []).filter((category) => !placedIds.has(category.id));
   }
 
-  protected onDragStart(event: DragEvent, categoryId: string): void {
-    event.dataTransfer?.setData('text/plain', categoryId);
+  // Eine Kachel kommt entweder aus dem Pool (kein fromCellId) oder von einem
+  // schon belegten Feld (fromCellId gesetzt, dann ist ein Tausch/Verschieben
+  // gemeint statt einer Neuzuweisung).
+  private setDragPayload(event: DragEvent, payload: DragPayload): void {
+    event.dataTransfer?.setData('text/plain', JSON.stringify(payload));
   }
 
-  protected async onDrop(event: DragEvent, cell: BingoCellWithDetails): Promise<void> {
-    event.preventDefault();
-    const categoryId = event.dataTransfer?.getData('text/plain');
-    if (!categoryId) {
+  private readDragPayload(event: DragEvent): DragPayload | null {
+    const raw = event.dataTransfer?.getData('text/plain');
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw) as DragPayload;
+    } catch {
+      return null;
+    }
+  }
+
+  protected onPoolDragStart(event: DragEvent, categoryId: string): void {
+    this.setDragPayload(event, { categoryId });
+  }
+
+  protected onCellDragStart(event: DragEvent, cell: BingoCellWithDetails): void {
+    if (!cell.category_id) {
       return;
     }
-    await this.assignCategory(cell, categoryId);
+    this.setDragPayload(event, { categoryId: cell.category_id, fromCellId: cell.id });
+  }
+
+  protected async onDrop(event: DragEvent, targetCell: BingoCellWithDetails): Promise<void> {
+    event.preventDefault();
+    const payload = this.readDragPayload(event);
+    if (!payload) {
+      return;
+    }
+    await this.placeCategory(payload, targetCell);
+  }
+
+  /** Kachel vom Feld zurück in den Pool ziehen. */
+  protected async onPoolDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    const payload = this.readDragPayload(event);
+    if (!payload?.fromCellId) {
+      return;
+    }
+    await this.clearCell(payload.fromCellId);
   }
 
   // Tap-to-place als Fallback für Touch-Geräte, auf denen die native
   // HTML5-Drag&Drop-API (dragstart/drop) nicht funktioniert: erst eine
-  // Kategorie aus dem Pool antippen, dann ein Feld antippen.
-  protected readonly selectedCategoryId = signal<string | null>(null);
+  // Pool-Kachel oder ein belegtes Feld antippen, dann das Ziel antippen
+  // (leeres Feld = verschieben, belegtes Feld = tauschen, Pool = zurücklegen).
+  protected readonly selectedSource = signal<DragPayload | null>(null);
 
   protected onPoolTileClick(categoryId: string): void {
-    this.selectedCategoryId.set(this.selectedCategoryId() === categoryId ? null : categoryId);
+    const current = this.selectedSource();
+    this.selectedSource.set(current?.categoryId === categoryId && !current.fromCellId ? null : { categoryId });
   }
 
   protected async onCellClick(cell: BingoCellWithDetails): Promise<void> {
-    const categoryId = this.selectedCategoryId();
-    if (!categoryId) {
+    const selected = this.selectedSource();
+    if (!selected) {
+      // Noch nichts ausgewählt: ein belegtes Feld antippen hebt es auf.
+      if (cell.category_id) {
+        this.selectedSource.set({ categoryId: cell.category_id, fromCellId: cell.id });
+      }
       return;
     }
-    this.selectedCategoryId.set(null);
-    await this.assignCategory(cell, categoryId);
+    if (selected.fromCellId === cell.id) {
+      this.selectedSource.set(null); // dieselbe Kachel nochmal antippen: abbrechen
+      return;
+    }
+    this.selectedSource.set(null);
+    await this.placeCategory(selected, cell);
   }
 
-  private async assignCategory(cell: BingoCellWithDetails, categoryId: string): Promise<void> {
+  /** Antippen der Pool-Fläche (nicht einer einzelnen Kachel) legt eine aufgehobene Feld-Kachel zurück. */
+  protected async onPoolAreaClick(): Promise<void> {
+    const selected = this.selectedSource();
+    this.selectedSource.set(null);
+    if (selected?.fromCellId) {
+      await this.clearCell(selected.fromCellId);
+    }
+  }
+
+  /**
+   * Setzt eine Kategorie auf targetCell. Kommt sie von einem anderen Feld,
+   * wird dort verschoben bzw. mit der Zielkategorie getauscht. Die Reihenfolge
+   * der Einzel-Updates vermeidet dabei, dass eine Kategorie kurzzeitig auf
+   * zwei Feldern gleichzeitig steht (verletzt sonst den unique-Constraint).
+   */
+  private async placeCategory(payload: DragPayload, targetCell: BingoCellWithDetails): Promise<void> {
+    if (payload.fromCellId === targetCell.id) {
+      return;
+    }
     this.error.set(null);
     try {
-      await this.bingoService.assignCategoryToCell(cell.id, categoryId);
+      if (!payload.fromCellId) {
+        await this.bingoService.assignCategoryToCell(targetCell.id, payload.categoryId);
+      } else if (targetCell.category_id) {
+        const targetCategoryId = targetCell.category_id;
+        await this.bingoService.assignCategoryToCell(targetCell.id, null);
+        await this.bingoService.assignCategoryToCell(payload.fromCellId, targetCategoryId);
+        await this.bingoService.assignCategoryToCell(targetCell.id, payload.categoryId);
+      } else {
+        await this.bingoService.assignCategoryToCell(payload.fromCellId, null);
+        await this.bingoService.assignCategoryToCell(targetCell.id, payload.categoryId);
+      }
       this.cells.reload();
     } catch (err) {
       console.error(err);
@@ -166,13 +245,10 @@ export class BingoArrange {
     }
   }
 
-  protected async clearCell(cell: BingoCellWithDetails): Promise<void> {
-    if (!cell.category_id) {
-      return;
-    }
+  private async clearCell(cellId: string): Promise<void> {
     this.error.set(null);
     try {
-      await this.bingoService.assignCategoryToCell(cell.id, null);
+      await this.bingoService.assignCategoryToCell(cellId, null);
       this.cells.reload();
     } catch (err) {
       console.error(err);

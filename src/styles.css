@@ -557,6 +557,12 @@ app-overlay .overlay-panel li.applicant.checked-in {
 .bingo-cell.filled {
   border-style: solid;
   border-color: var(--blue);
+  cursor: grab;
+}
+
+/* Aufgehobene Kachel (per Tap ausgewählt, wartet auf ein Ziel). */
+.bingo-cell.picked-up {
+  opacity: 0.5;
 }
 
 .bingo-cell.claimed-a {
@@ -620,8 +626,9 @@ app-overlay .overlay-panel li.applicant.checked-in {
   box-shadow: 0 0 0 2px var(--red-glow);
 }
 
-/* Zeigt an, wohin eine per Tap ausgewählte Kategorie-Kachel als nächstes hinkann. */
-.bingo-cell.drop-target:not(.filled) {
+/* Zeigt an, wohin eine per Tap ausgewählte Kategorie-Kachel als nächstes hinkann
+   (leeres Feld = verschieben, belegtes Feld = tauschen). */
+.bingo-cell.drop-target {
   border-style: dashed;
   border-color: var(--red);
   cursor: pointer;

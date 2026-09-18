@@ -56,7 +56,8 @@ export class BingoPlay {
     try {
       await this.bingoService.claimCell(cell.id, profile.id);
       this.cells.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Feld ist schon vergeben oder konnte nicht geclaimt werden.');
       this.cells.reload();
     }

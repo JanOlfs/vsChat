@@ -32,13 +32,19 @@ export class BingoList {
       this.error.set('Name und Gegner-Twitch-Login sind Pflichtfelder.');
       return;
     }
+    const profileId = this.auth.currentProfile()?.id;
+    if (!profileId) {
+      this.error.set('Nicht eingeloggt.');
+      return;
+    }
 
     try {
-      await this.bingoService.createBoard(name, opponent);
+      await this.bingoService.createBoard(name, opponent, profileId);
       nameEl.value = '';
       opponentEl.value = '';
       this.boards.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Spielfläche konnte nicht angelegt werden.');
     }
   }

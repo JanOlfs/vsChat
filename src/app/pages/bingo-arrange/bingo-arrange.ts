@@ -51,7 +51,8 @@ export class BingoArrange {
         this.selectedCategoryId.set(null);
       }
       this.cells.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Zelle konnte nicht geändert werden.');
     }
   }
@@ -67,7 +68,8 @@ export class BingoArrange {
       await this.bingoService.addCategory(this.id(), label);
       labelEl.value = '';
       this.categories.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Kategorie konnte nicht angelegt werden.');
     }
   }
@@ -78,7 +80,8 @@ export class BingoArrange {
       await this.bingoService.deleteCategory(categoryId);
       this.categories.reload();
       this.cells.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Kategorie konnte nicht gelöscht werden.');
     }
   }
@@ -88,7 +91,8 @@ export class BingoArrange {
     try {
       await this.bingoService.setBoardStatus(this.id(), 'active');
       this.board.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Spiel konnte nicht gestartet werden.');
     }
   }
@@ -101,7 +105,8 @@ export class BingoArrange {
     try {
       await this.bingoService.setBoardStatus(this.id(), 'finished');
       this.board.reload();
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.error.set('Spiel konnte nicht beendet werden.');
     }
   }

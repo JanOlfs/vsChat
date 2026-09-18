@@ -34,10 +34,10 @@ export class BingoService {
   }
 
   /** Legt ein Board samt 25 leeren Zellen an. */
-  async createBoard(name: string, opponentTwitchLogin: string): Promise<{ id: string }> {
+  async createBoard(name: string, opponentTwitchLogin: string, createdBy: string): Promise<{ id: string }> {
     const { data, error } = await this.supabase.client
       .from('bingo_boards')
-      .insert({ name, opponent_twitch_login: opponentTwitchLogin })
+      .insert({ name, opponent_twitch_login: opponentTwitchLogin, created_by: createdBy })
       .select('id')
       .single();
     if (error) {

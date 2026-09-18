@@ -661,3 +661,35 @@ app-overlay .overlay-panel li.applicant.checked-in {
   pointer-events: none;
   z-index: 10;
 }
+
+/* Ersatz für das native confirm(), gleiches dunkles Design wie der Rest der Seite. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  max-width: 26rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.modal-cancel {
+  background: transparent;
+  border-color: var(--border);
+}

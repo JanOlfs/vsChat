@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { checkBingoWinner } from '../../utils/bingo-win';
 import { AutoFitTextDirective } from '../../directives/auto-fit-text.directive';
 
@@ -19,6 +20,7 @@ export class BingoPlay {
   private readonly bingoService = inject(BingoService);
   private readonly router = inject(Router);
   private readonly supabase = inject(SupabaseService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
   readonly id = input.required<string>();
@@ -87,7 +89,7 @@ export class BingoPlay {
 
   /** Admin-Aktion: Claims zurücksetzen, Status zurück auf Setup, dann selbst zum Anordnen wechseln. */
   protected async goToArrange(): Promise<void> {
-    if (!confirm('Zurück zum Anordnen? Alle Claims auf dieser Spielfläche gehen dabei verloren.')) {
+    if (!(await this.confirmDialog.ask('Zurück zum Anordnen? Alle Claims auf dieser Spielfläche gehen dabei verloren.'))) {
       return;
     }
     this.error.set(null);
@@ -103,7 +105,9 @@ export class BingoPlay {
 
   /** Admin-Aktion: nur die Claims löschen, Layout und Status (aktiv) bleiben, für eine schnelle Revanche. */
   protected async resetClaims(): Promise<void> {
-    if (!confirm('Alle Claims auf dieser Spielfläche wirklich löschen? Das Board bleibt so angeordnet.')) {
+    if (
+      !(await this.confirmDialog.ask('Alle Claims auf dieser Spielfläche wirklich löschen? Das Board bleibt so angeordnet.'))
+    ) {
       return;
     }
     this.error.set(null);

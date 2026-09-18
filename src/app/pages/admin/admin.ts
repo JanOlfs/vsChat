@@ -3,6 +3,7 @@ import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
 import { RoundControlService } from '../../services/round-control.service';
 import { LiveRoundService } from '../../services/live-round.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import type { CategoryWithCount } from '../../models/types';
 
 @Component({
@@ -14,6 +15,7 @@ export class Admin {
   private readonly applicationService = inject(ApplicationService);
   private readonly roundControl = inject(RoundControlService);
   private readonly liveRoundService = inject(LiveRoundService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
 
   // Läuft gerade eine Runden-Steuerungs-Aktion (Check-in/Voting), Buttons währenddessen sperren.
   protected readonly roundBusy = signal(false);
@@ -130,15 +132,19 @@ export class Admin {
     void this.runRoundAction(() => this.roundControl.closeVote(), 'Voting konnte nicht beendet werden.');
   }
 
-  protected cancelRound(): void {
-    if (!confirm('Aktuelle Runde wirklich abbrechen? Check-in/Voting-Fortschritt geht verloren.')) {
+  protected async cancelRound(): Promise<void> {
+    if (!(await this.confirmDialog.ask('Aktuelle Runde wirklich abbrechen? Check-in/Voting-Fortschritt geht verloren.'))) {
       return;
     }
     void this.runRoundAction(() => this.roundControl.cancelRound(), 'Runde konnte nicht abgebrochen werden.');
   }
 
   protected async resetCategory(categoryId: string): Promise<void> {
-    if (!confirm('Wirklich alle Bewerbungen dieser Kategorie löschen? Das lässt sich nicht rückgängig machen.')) {
+    if (
+      !(await this.confirmDialog.ask(
+        'Wirklich alle Bewerbungen dieser Kategorie löschen? Das lässt sich nicht rückgängig machen.',
+      ))
+    ) {
       return;
     }
     this.error.set(null);

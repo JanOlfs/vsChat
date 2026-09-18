@@ -1,0 +1,11 @@
+@if (service.request(); as req) {
+  <div class="modal-backdrop" (click)="service.respond(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <p>{{ req.message }}</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel" (click)="service.respond(false)">Abbrechen</button>
+        <button type="button" (click)="service.respond(true)">Bestätigen</button>
+      </div>
+    </div>
+  </div>
+}

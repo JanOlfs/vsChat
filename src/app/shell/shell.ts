@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { APP_VERSION } from '../version';
+import { ConfirmDialog } from '../shared/confirm-dialog/confirm-dialog';
 
 /**
  * Kopf- und Fußzeile für die normalen Seiten. `/overlay` (später) bekommt
@@ -9,7 +10,7 @@ import { APP_VERSION } from '../version';
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, ConfirmDialog],
   templateUrl: './shell.html',
 })
 export class Shell {

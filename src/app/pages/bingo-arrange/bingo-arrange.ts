@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { AutoFitTextDirective } from '../../directives/auto-fit-text.directive';
 import type { BingoCellWithDetails } from '../../models/types';
 
@@ -20,6 +21,7 @@ export class BingoArrange {
   private readonly bingoService = inject(BingoService);
   private readonly router = inject(Router);
   private readonly supabase = inject(SupabaseService);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
   readonly id = input.required<string>();
@@ -220,7 +222,11 @@ export class BingoArrange {
 
   /** Nimmt alle Kategorien vom Grid (zurück in den Pool), löscht keine Kategorien. */
   protected async clearGrid(): Promise<void> {
-    if (!confirm('Wirklich alle Felder leeren? Die Kategorien selbst bleiben erhalten, landen nur wieder im Pool.')) {
+    if (
+      !(await this.confirmDialog.ask(
+        'Wirklich alle Felder leeren? Die Kategorien selbst bleiben erhalten, landen nur wieder im Pool.',
+      ))
+    ) {
       return;
     }
     this.error.set(null);
@@ -234,7 +240,7 @@ export class BingoArrange {
   }
 
   protected async deleteBoard(): Promise<void> {
-    if (!confirm('Spielfläche wirklich löschen? Das lässt sich nicht rückgängig machen.')) {
+    if (!(await this.confirmDialog.ask('Spielfläche wirklich löschen? Das lässt sich nicht rückgängig machen.'))) {
       return;
     }
     this.error.set(null);

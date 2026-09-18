@@ -12,12 +12,14 @@
           <div
             class="bingo-cell"
             [class.filled]="cell.category_id"
+            [class.drop-target]="selectedCategoryId()"
             (dragover)="$event.preventDefault()"
             (drop)="onDrop($event, cell)"
+            (click)="onCellClick(cell)"
           >
             <span class="bingo-cell-label" appAutoFitText>{{ cell.category?.label ?? '—' }}</span>
             @if (cell.category_id) {
-              <span class="bingo-tile-remove" (click)="clearCell(cell)">×</span>
+              <span class="bingo-tile-remove" (click)="$event.stopPropagation(); clearCell(cell)">×</span>
             }
           </div>
         }
@@ -25,12 +27,21 @@
 
       <div class="bingo-pool-panel">
         <h2>Kategorien-Pool</h2>
-        <p class="muted">Kachel ins Feld ziehen. Platzierte Kategorien verschwinden hier aus der Liste.</p>
+        <p class="muted">
+          Kachel ins Feld ziehen (oder antippen, dann ein Feld antippen). Platzierte Kategorien verschwinden hier aus
+          der Liste.
+        </p>
         <div class="bingo-pool">
           @for (category of unassignedCategories; track category.id) {
-            <div class="bingo-tile" draggable="true" (dragstart)="onDragStart($event, category.id)">
+            <div
+              class="bingo-tile"
+              [class.selected]="selectedCategoryId() === category.id"
+              draggable="true"
+              (dragstart)="onDragStart($event, category.id)"
+              (click)="onPoolTileClick(category.id)"
+            >
               {{ category.label }}
-              <span class="bingo-tile-remove" (click)="deleteCategory(category.id)">×</span>
+              <span class="bingo-tile-remove" (click)="$event.stopPropagation(); deleteCategory(category.id)">×</span>
             </div>
           } @empty {
             <p class="muted">Alle Kategorien sind platziert, oder es gibt noch keine.</p>

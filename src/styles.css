@@ -615,6 +615,18 @@ app-overlay .overlay-panel li.applicant.checked-in {
   cursor: grab;
 }
 
+.bingo-tile.selected {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px var(--red-glow);
+}
+
+/* Zeigt an, wohin eine per Tap ausgewählte Kategorie-Kachel als nächstes hinkann. */
+.bingo-cell.drop-target:not(.filled) {
+  border-style: dashed;
+  border-color: var(--red);
+  cursor: pointer;
+}
+
 .bingo-tile-remove {
   position: absolute;
   top: 0.15rem;

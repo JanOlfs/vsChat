@@ -127,6 +127,28 @@ export class BingoArrange {
     if (!categoryId) {
       return;
     }
+    await this.assignCategory(cell, categoryId);
+  }
+
+  // Tap-to-place als Fallback für Touch-Geräte, auf denen die native
+  // HTML5-Drag&Drop-API (dragstart/drop) nicht funktioniert: erst eine
+  // Kategorie aus dem Pool antippen, dann ein Feld antippen.
+  protected readonly selectedCategoryId = signal<string | null>(null);
+
+  protected onPoolTileClick(categoryId: string): void {
+    this.selectedCategoryId.set(this.selectedCategoryId() === categoryId ? null : categoryId);
+  }
+
+  protected async onCellClick(cell: BingoCellWithDetails): Promise<void> {
+    const categoryId = this.selectedCategoryId();
+    if (!categoryId) {
+      return;
+    }
+    this.selectedCategoryId.set(null);
+    await this.assignCategory(cell, categoryId);
+  }
+
+  private async assignCategory(cell: BingoCellWithDetails, categoryId: string): Promise<void> {
     this.error.set(null);
     try {
       await this.bingoService.assignCategoryToCell(cell.id, categoryId);

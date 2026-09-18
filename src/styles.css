@@ -335,7 +335,8 @@ main {
   margin-bottom: 0;
 }
 
-.admin-form label {
+.admin-form label,
+.admin-form .admin-form-field {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;

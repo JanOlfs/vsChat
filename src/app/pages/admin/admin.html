@@ -114,7 +114,7 @@
           Beschreibung (optional)
           <input #editDescriptionInput type="text" [value]="category.description ?? ''" />
         </label>
-        <label>
+        <div class="admin-form-field">
           Banner-Bild (optional, ca. 5:1)
           <div class="banner-upload">
             @if (category.banner_url) {
@@ -131,7 +131,7 @@
               <p class="banner-filename">{{ file.name }}</p>
             }
           </div>
-        </label>
+        </div>
         <div class="modal-actions">
           <button type="button" class="modal-cancel" (click)="closeEditCategory()">Abbrechen</button>
           <button type="submit">Speichern</button>
@@ -217,7 +217,7 @@
     Beschreibung (optional)
     <input #descriptionInput type="text" />
   </label>
-  <label>
+  <div class="admin-form-field">
     Banner-Bild (optional, ca. 5:1)
     <div class="banner-upload">
       <div class="banner-picker">
@@ -231,6 +231,6 @@
         <p class="banner-filename">{{ file.name }}</p>
       }
     </div>
-  </label>
+  </div>
   <button type="submit">Anlegen</button>
 </form>

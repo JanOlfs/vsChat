@@ -6,50 +6,60 @@
   <h1>{{ b.name }}</h1>
   <p class="muted">Gegen {{ b.opponent_twitch_login }} – Status: {{ b.status }}</p>
 
-  @if (b.status === 'setup') {
-    <button type="button" [disabled]="!allCellsFilled" (click)="startBoard()">
-      Spiel starten{{ allCellsFilled ? '' : ' (erst alle 25 Felder befüllen)' }}
-    </button>
-  }
-  @if (b.status !== 'finished') {
-    <button type="button" (click)="finishBoard()">Spiel beenden</button>
-  }
-
-  <p>
-    Overlay-Link: <code>{{ overlayUrl }}</code>
-  </p>
-}
-
-<h2>Kategorien-Pool</h2>
-<p class="muted">Kachel ins Feld ziehen, um sie dort zu platzieren. Platzierte Kategorien verschwinden hier aus der Liste.</p>
-<div class="bingo-pool">
-  @for (category of unassignedCategories; track category.id) {
-    <div class="bingo-tile" draggable="true" (dragstart)="onDragStart($event, category.id)">
-      {{ category.label }}
-      <span class="bingo-tile-remove" (click)="deleteCategory(category.id)">×</span>
-    </div>
-  } @empty {
-    <p class="muted">Alle Kategorien sind platziert, oder es gibt noch keine.</p>
-  }
-</div>
-<form class="admin-form" (submit)="addCategory($event, labelInput)">
-  <label>
-    Neue Kategorie
-    <input #labelInput type="text" placeholder="z.B. Double Kill in League" required />
-  </label>
-  <button type="submit">Hinzufügen</button>
-</form>
-
-<h2>Board (5x5)</h2>
-@if (cells.value(); as boardCells) {
-  <div class="bingo-grid">
-    @for (cell of boardCells; track cell.id) {
-      <div class="bingo-cell" [class.filled]="cell.category_id" (dragover)="$event.preventDefault()" (drop)="onDrop($event, cell)">
-        {{ cell.category?.label ?? '—' }}
-        @if (cell.category_id) {
-          <span class="bingo-tile-remove" (click)="clearCell(cell)">×</span>
+  @if (b.status !== 'setup') {
+    <p role="alert">
+      Die Spielfläche läuft schon (Status: {{ b.status }}), anordnen geht nicht mehr.
+    </p>
+    <button type="button" (click)="goToPlay()">Zum Spielen wechseln</button>
+  } @else {
+    <div class="bingo-arrange-layout">
+      <div class="bingo-grid">
+        @for (cell of cells.value(); track cell.id) {
+          <div class="bingo-cell" [class.filled]="cell.category_id" (dragover)="$event.preventDefault()" (drop)="onDrop($event, cell)">
+            {{ cell.category?.label ?? '—' }}
+            @if (cell.category_id) {
+              <span class="bingo-tile-remove" (click)="clearCell(cell)">×</span>
+            }
+          </div>
         }
       </div>
-    }
-  </div>
+
+      <div class="bingo-pool-panel">
+        <h2>Kategorien-Pool</h2>
+        <p class="muted">Kachel ins Feld ziehen. Platzierte Kategorien verschwinden hier aus der Liste.</p>
+        <div class="bingo-pool">
+          @for (category of unassignedCategories; track category.id) {
+            <div class="bingo-tile" draggable="true" (dragstart)="onDragStart($event, category.id)">
+              {{ category.label }}
+              <span class="bingo-tile-remove" (click)="deleteCategory(category.id)">×</span>
+            </div>
+          } @empty {
+            <p class="muted">Alle Kategorien sind platziert, oder es gibt noch keine.</p>
+          }
+        </div>
+        <form class="admin-form" (submit)="addCategory($event, labelInput)">
+          <label>
+            Neue Kategorie
+            <input #labelInput type="text" placeholder="z.B. Double Kill in League" required />
+          </label>
+          <button type="submit">Hinzufügen</button>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (auth.currentProfile()?.is_admin) {
+    <div class="bingo-admin-controls">
+      @if (b.status === 'setup') {
+        <button type="button" [disabled]="!allCellsFilled" (click)="startBoard()">
+          Spiel starten{{ allCellsFilled ? '' : ' (erst alle 25 Felder befüllen)' }}
+        </button>
+      }
+      <button type="button" (click)="resetBoard()">Zurücksetzen</button>
+      <button type="button" (click)="deleteBoard()">Löschen</button>
+      <p>
+        Overlay-Link: <code>{{ overlayUrl }}</code>
+      </p>
+    </div>
+  }
 }

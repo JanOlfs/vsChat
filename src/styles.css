@@ -291,6 +291,16 @@ main {
   flex-wrap: wrap;
 }
 
+.admin-form input {
+  height: 2.5rem;
+}
+
+.admin-form button {
+  height: 2.5rem;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .admin-form label {
   display: flex;
   flex-direction: column;
@@ -424,6 +434,33 @@ app-overlay .overlay-panel li.applicant.checked-in {
 }
 
 /* Lockout-Bingo-Board, genutzt von Anordnen-/Spiel-/Overlay-Seite. */
+.bingo-arrange-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.bingo-arrange-layout .bingo-grid {
+  max-width: 34rem;
+  flex-shrink: 0;
+}
+
+.bingo-pool-panel {
+  flex: 1;
+  min-width: 16rem;
+}
+
+.bingo-admin-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
 .bingo-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -439,7 +476,7 @@ app-overlay .overlay-panel li.applicant.checked-in {
   justify-content: center;
   text-align: center;
   padding: 0.5rem;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   line-height: 1.25;
   text-transform: none;
   font-family: system-ui, sans-serif;
@@ -471,8 +508,23 @@ app-overlay .overlay-panel li.applicant.checked-in {
   box-shadow: 0 0 0 3px #fbbf24 inset;
 }
 
+/* Höhere Spezifität als das globale button:hover (Zellen sind auf der
+   Spielseite <button>), sonst blitzt jedes Feld beim Hover in Marken-Rot statt
+   in der eigenen Farbe (z.B. Gegner-Feld sollte blau bleiben). */
+.bingo-grid .bingo-cell:hover {
+  background: var(--bg-elevated-2);
+}
+
+.bingo-grid .bingo-cell.claimed-a:hover {
+  background: var(--red-dark);
+}
+
+.bingo-grid .bingo-cell.claimed-b:hover {
+  background: #1e3a5f;
+}
+
 .bingo-overlay-panel .bingo-cell {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 /* Kategorien-Pool als Kacheln, gleicher Look wie die Board-Felder. */
@@ -486,7 +538,7 @@ app-overlay .overlay-panel li.applicant.checked-in {
 .bingo-tile {
   position: relative;
   padding: 0.6rem 1.75rem 0.6rem 0.9rem;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
   border-radius: 0.35rem;

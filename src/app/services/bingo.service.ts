@@ -60,6 +60,25 @@ export class BingoService {
     }
   }
 
+  /** Setzt alle Claims zurück und schickt das Board zurück in den Setup-Modus, Anordnung bleibt erhalten. */
+  async resetBoard(id: string): Promise<void> {
+    const { error: cellsError } = await this.supabase.client
+      .from('bingo_cells')
+      .update({ claimed_by: null, claimed_at: null })
+      .eq('board_id', id);
+    if (cellsError) {
+      throw cellsError;
+    }
+    await this.setBoardStatus(id, 'setup');
+  }
+
+  async deleteBoard(id: string): Promise<void> {
+    const { error } = await this.supabase.client.from('bingo_boards').delete().eq('id', id);
+    if (error) {
+      throw error;
+    }
+  }
+
   async getCategories(boardId: string): Promise<BingoCategory[]> {
     const { data, error } = await this.supabase.client
       .from('bingo_categories')

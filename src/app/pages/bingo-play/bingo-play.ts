@@ -49,7 +49,7 @@ export class BingoPlay {
   protected async claim(cell: { id: string; claimed_by: string | null }): Promise<void> {
     const profile = this.auth.currentProfile();
     const board = this.board.value();
-    if (!profile || !board || board.status !== 'active' || cell.claimed_by || !this.isPlayer) {
+    if (!profile || !board || board.status !== 'active' || cell.claimed_by || !this.isPlayer || this.winner) {
       return;
     }
     this.error.set(null);

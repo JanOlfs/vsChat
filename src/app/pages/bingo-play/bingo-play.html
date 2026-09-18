@@ -27,7 +27,7 @@
         [class.claimed-a]="cell.claimed_by && cell.claimed_by === board.value()?.created_by"
         [class.claimed-b]="cell.claimed_by && cell.claimed_by !== board.value()?.created_by"
         [class.winning-line]="winner?.line?.includes(cell.position)"
-        [disabled]="!!cell.claimed_by || board.value()?.status !== 'active' || !isPlayer"
+        [disabled]="!!cell.claimed_by || board.value()?.status !== 'active' || !isPlayer || !!winner"
         (click)="claim(cell)"
       >
         {{ cell.category?.label ?? '—' }}

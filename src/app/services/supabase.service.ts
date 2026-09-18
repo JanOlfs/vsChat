@@ -7,7 +7,10 @@ import { environment } from '../../environments/environment';
 export class SupabaseService {
   readonly client: SupabaseClient = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
 
-  private readonly _session = signal<Session | null>(null);
+  // undefined = noch nicht geprüft (z.B. direkt nach einem Reload), null = geprüft, keine Session.
+  // Die Unterscheidung ist wichtig, sonst hält ein Guard "noch nicht geprüft" für "nicht eingeloggt"
+  // und wirft eingeloggte User bei einem harten Reload auf einer geschützten Route raus.
+  private readonly _session = signal<Session | null | undefined>(undefined);
   readonly session = this._session.asReadonly();
 
   constructor() {

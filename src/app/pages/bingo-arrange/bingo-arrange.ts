@@ -1,6 +1,11 @@
-import { Component, inject, input, resource, signal } from '@angular/core';
+import { Component, DestroyRef, inject, input, resource, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
+import { AuthService } from '../../services/auth.service';
 import type { BingoCellWithDetails } from '../../models/types';
+
+const POLL_INTERVAL_MS = 2000;
+const UNIQUE_VIOLATION = '23505';
 
 @Component({
   selector: 'app-bingo-arrange',
@@ -8,6 +13,8 @@ import type { BingoCellWithDetails } from '../../models/types';
 })
 export class BingoArrange {
   private readonly bingoService = inject(BingoService);
+  private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
 
   readonly id = input.required<string>();
 
@@ -28,6 +35,13 @@ export class BingoArrange {
     loader: ({ params }) => this.bingoService.getCells(params),
   });
 
+  constructor() {
+    // Falls der andere Spieler währenddessen startet, soll das hier auffallen
+    // (Hinweis + Wechsel-Button), ohne dass man selbst neu laden muss.
+    const interval = setInterval(() => this.board.reload(), POLL_INTERVAL_MS);
+    inject(DestroyRef).onDestroy(() => clearInterval(interval));
+  }
+
   protected get overlayUrl(): string {
     return `${window.location.origin}/bingo/${this.id()}/overlay`;
   }
@@ -40,6 +54,10 @@ export class BingoArrange {
   protected get unassignedCategories() {
     const placedIds = new Set((this.cells.value() ?? []).map((cell) => cell.category_id).filter(Boolean));
     return (this.categories.value() ?? []).filter((category) => !placedIds.has(category.id));
+  }
+
+  protected goToPlay(): void {
+    void this.router.navigate(['/bingo', this.id(), 'play']);
   }
 
   protected onDragStart(event: DragEvent, categoryId: string): void {
@@ -58,7 +76,12 @@ export class BingoArrange {
       this.cells.reload();
     } catch (err) {
       console.error(err);
-      this.error.set('Zelle konnte nicht geändert werden.');
+      const code = (err as { code?: string } | null)?.code;
+      this.error.set(
+        code === UNIQUE_VIOLATION
+          ? 'Diese Kategorie liegt schon an anderer Stelle auf dem Board.'
+          : 'Zelle konnte nicht geändert werden.',
+      );
     }
   }
 
@@ -116,17 +139,32 @@ export class BingoArrange {
     }
   }
 
-  protected async finishBoard(): Promise<void> {
-    if (!confirm('Spielfläche wirklich beenden? Danach können keine Felder mehr geclaimt werden.')) {
+  protected async resetBoard(): Promise<void> {
+    if (!confirm('Spielfläche wirklich zurücksetzen? Alle Claims gehen verloren, die Anordnung bleibt.')) {
       return;
     }
     this.error.set(null);
     try {
-      await this.bingoService.setBoardStatus(this.id(), 'finished');
+      await this.bingoService.resetBoard(this.id());
       this.board.reload();
+      this.cells.reload();
     } catch (err) {
       console.error(err);
-      this.error.set('Spiel konnte nicht beendet werden.');
+      this.error.set('Spiel konnte nicht zurückgesetzt werden.');
+    }
+  }
+
+  protected async deleteBoard(): Promise<void> {
+    if (!confirm('Spielfläche wirklich löschen? Das lässt sich nicht rückgängig machen.')) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      await this.bingoService.deleteBoard(this.id());
+      void this.router.navigate(['/bingo']);
+    } catch (err) {
+      console.error(err);
+      this.error.set('Spielfläche konnte nicht gelöscht werden.');
     }
   }
 }

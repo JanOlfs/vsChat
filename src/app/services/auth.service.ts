@@ -14,16 +14,31 @@ export const AUTH_RETURN_TO_KEY = 'auth_return_to';
 export class AuthService {
   private readonly _currentProfile = signal<Profile | null>(null);
   readonly currentProfile = this._currentProfile.asReadonly();
-  readonly isLoggedIn = computed(() => this.supabase.session() !== null);
+  readonly isLoggedIn = computed(() => this.supabase.session() != null);
+
+  private resolveReady!: () => void;
+  /**
+   * Wird aufgelöst, sobald die Session geprüft (und bei vorhandener Session das
+   * Profil geladen) ist. Guards warten darauf, damit ein harter Reload auf einer
+   * geschützten Route nicht fälschlich als "nicht eingeloggt" gewertet wird,
+   * nur weil die Session-Prüfung noch nicht durch ist.
+   */
+  readonly ready: Promise<void> = new Promise((resolve) => {
+    this.resolveReady = resolve;
+  });
 
   constructor(private readonly supabase: SupabaseService) {
     effect(() => {
       const session = this.supabase.session();
+      if (session === undefined) {
+        return; // noch nicht geprüft
+      }
       if (!session) {
         this._currentProfile.set(null);
+        this.resolveReady();
         return;
       }
-      void this.loadProfile(session.user.id);
+      void this.loadProfile(session.user.id).finally(() => this.resolveReady());
     });
   }
 

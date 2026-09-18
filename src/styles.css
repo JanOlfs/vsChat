@@ -442,8 +442,12 @@ app-overlay .overlay-panel li.applicant.checked-in {
 }
 
 .bingo-arrange-layout .bingo-grid {
+  /* max-width allein reicht nicht: als Flex-Item ignoriert ein CSS-Grid mit
+     fr-Spalten max-width bei der flex-basis:auto-Berechnung und wird breiter
+     als gedacht, dadurch überlappte es den Pool daneben. Feste flex-basis
+     macht die Breite eindeutig. */
+  flex: 0 0 42rem;
   max-width: 42rem;
-  flex-shrink: 0;
 }
 
 .bingo-pool-panel {
@@ -463,12 +467,17 @@ app-overlay .overlay-panel li.applicant.checked-in {
 
 .bingo-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* minmax(0, 1fr) statt nacktem 1fr: sonst erzwingt eine lange, nicht
+     umbrechbare Kategorie (ein Wort ohne Leerzeichen) eine Mindestbreite pro
+     Spalte, die das Grid über seinen Container hinaus wachsen lässt. */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
   max-width: 50rem;
 }
 
 .bingo-cell {
+  overflow: hidden;
+  overflow-wrap: anywhere;
   position: relative;
   aspect-ratio: 1;
   display: flex;

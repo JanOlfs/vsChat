@@ -4,14 +4,8 @@
 
 @if (board.value(); as b) {
   <h1>{{ b.name }}</h1>
-  <p class="muted">Gegen {{ b.opponent_twitch_login }} – Status: {{ b.status }}</p>
 
-  @if (b.status !== 'setup') {
-    <p role="alert">
-      Die Spielfläche läuft schon (Status: {{ b.status }}), anordnen geht nicht mehr.
-    </p>
-    <button type="button" (click)="goToPlay()">Zum Spielen wechseln</button>
-  } @else {
+  @if (b.status === 'setup') {
     <div class="bingo-arrange-layout">
       <div class="bingo-grid">
         @for (cell of cells.value(); track cell.id) {

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, input, resource, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input, resource, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
@@ -38,10 +38,18 @@ export class BingoArrange {
   });
 
   constructor() {
-    // Falls der andere Spieler währenddessen startet, soll das hier auffallen
-    // (Hinweis + Wechsel-Button), ohne dass man selbst neu laden muss.
     const interval = setInterval(() => this.board.reload(), POLL_INTERVAL_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(interval));
+
+    // Sobald die Spielfläche (durch wen auch immer) gestartet wurde, folgt
+    // jeder, der hier noch auf der Anordnen-Seite sitzt, automatisch zum
+    // Spielen, ohne selbst klicken zu müssen.
+    effect(() => {
+      const board = this.board.value();
+      if (board && board.status !== 'setup') {
+        void this.router.navigate(['/bingo', this.id(), 'play']);
+      }
+    });
   }
 
   protected get overlayUrl(): string {
@@ -56,10 +64,6 @@ export class BingoArrange {
   protected get unassignedCategories() {
     const placedIds = new Set((this.cells.value() ?? []).map((cell) => cell.category_id).filter(Boolean));
     return (this.categories.value() ?? []).filter((category) => !placedIds.has(category.id));
-  }
-
-  protected goToPlay(): void {
-    void this.router.navigate(['/bingo', this.id(), 'play']);
   }
 
   protected onDragStart(event: DragEvent, categoryId: string): void {
@@ -134,12 +138,11 @@ export class BingoArrange {
     this.error.set(null);
     try {
       await this.bingoService.setBoardStatus(this.id(), 'active');
+      this.board.reload(); // löst den Auto-Wechsel-Effect gleich aus, nicht erst beim nächsten Poll
     } catch (err) {
       console.error(err);
       this.error.set('Spiel konnte nicht gestartet werden.');
-      return;
     }
-    this.goToPlay();
   }
 
   /** Nimmt alle Kategorien vom Grid (zurück in den Pool), löscht keine Kategorien. */

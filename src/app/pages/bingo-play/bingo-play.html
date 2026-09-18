@@ -4,7 +4,6 @@
 
 @if (board.value(); as b) {
   <h1>{{ b.name }}</h1>
-  <p class="muted">Gegen {{ b.opponent_twitch_login }} – Status: {{ b.status }}</p>
 
   @if (!isPlayer) {
     <p class="muted">Du bist nicht Teil dieser Spielfläche, nur Zuschauer-Ansicht.</p>

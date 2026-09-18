@@ -130,6 +130,25 @@ export class Admin {
     this.editingCategory.set(null);
   }
 
+  /** Bild sofort hochladen, unabhängig vom Speichern-Button für die restlichen Felder. */
+  protected async saveEditBanner(category: CategoryWithCount, bannerEl: HTMLInputElement): Promise<void> {
+    const file = bannerEl.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      const url = await this.categoryService.uploadBanner(category.slug, file);
+      await this.categoryService.setCategoryBanner(category.id, url);
+      bannerEl.value = '';
+      this.editingCategory.set({ ...category, banner_url: url });
+      this.categories.reload();
+    } catch (err) {
+      console.error(err);
+      this.error.set('Banner konnte nicht hochgeladen werden.');
+    }
+  }
+
   protected async saveEditCategory(
     event: Event,
     category: CategoryWithCount,

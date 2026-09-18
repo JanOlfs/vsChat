@@ -120,12 +120,25 @@
             @if (category.banner_url) {
               <img [src]="category.banner_url" alt="" class="banner-thumbnail" />
             }
-            <div class="banner-picker">
-              <button type="button" class="banner-picker-upload" (click)="editBannerInput.click()">Bild hochladen</button>
-              <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, editBannerInput)">
-                Bild einfügen (Strg+V)
+            <div class="banner-row">
+              <div class="banner-picker">
+                <button type="button" class="banner-picker-upload" (click)="editBannerInput.click()">Bild hochladen</button>
+                <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, editBannerInput)">
+                  Bild einfügen (Strg+V)
+                </div>
+                <input #editBannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
               </div>
-              <input #editBannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
+              @if (editBannerInput.files?.[0]) {
+                <button
+                  type="button"
+                  class="banner-confirm"
+                  (click)="saveEditBanner(category, editBannerInput)"
+                  title="Bild hochladen"
+                  aria-label="Bild hochladen"
+                >
+                  ⬆
+                </button>
+              }
             </div>
             @if (editBannerInput.files?.[0]; as file) {
               <p class="banner-filename">{{ file.name }}</p>

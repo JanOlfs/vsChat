@@ -47,6 +47,26 @@ export class Admin {
     }
   }
 
+  /** Übernimmt ein aus der Zwischenablage eingefügtes Bild ins Datei-Feld, als hätte man's ausgewählt. */
+  protected onPasteImage(event: ClipboardEvent, targetInput: HTMLInputElement): void {
+    const items = event.clipboardData?.items;
+    if (!items) {
+      return;
+    }
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          event.preventDefault();
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          targetInput.files = dataTransfer.files;
+        }
+        return;
+      }
+    }
+  }
+
   protected manageApplicants(categoryId: string): void {
     this.selectedCategoryId.set(this.selectedCategoryId() === categoryId ? null : categoryId);
   }

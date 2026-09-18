@@ -299,6 +299,27 @@ main {
   color: var(--text-muted);
 }
 
+/* Datei auswählen oder Bild reinpasten (Strg+V), sobald die Zone fokussiert ist. */
+.paste-zone {
+  display: inline-block;
+  padding: 0.3rem 0.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.35rem;
+}
+
+.paste-zone:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.paste-zone::after {
+  content: 'oder Bild einfügen (Strg+V)';
+  display: block;
+  font-size: 0.75em;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
 .admin-applicants {
   border: 1px solid var(--border);
   background: var(--bg-elevated);

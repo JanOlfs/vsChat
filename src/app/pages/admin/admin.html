@@ -68,7 +68,9 @@
           <td>{{ category.applicant_count }}</td>
           <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
           <td>
-            <input #bannerInput type="file" accept="image/*" />
+            <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+              <input #bannerInput type="file" accept="image/*" />
+            </div>
             <button type="button" (click)="saveBanner(category, bannerInput)">Hochladen</button>
           </td>
           <td>
@@ -131,7 +133,9 @@
   </label>
   <label>
     Banner-Bild (optional, ca. 5:1)
-    <input #bannerInput type="file" accept="image/*" />
+    <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+      <input #bannerInput type="file" accept="image/*" />
+    </div>
   </label>
   <button type="submit">Anlegen</button>
 </form>

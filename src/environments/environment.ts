@@ -3,4 +3,5 @@
 export const environment = {
   supabaseUrl: 'https://egatvfjimsrybmzhlzts.supabase.co',
   supabaseAnonKey: 'sb_publishable_Mz5ADI9_djB6AyfGhixtdw_-RUHGFMp',
+  chatbotUrl: 'https://captnblacky-chatbot.captnblacky.workers.dev',
 };

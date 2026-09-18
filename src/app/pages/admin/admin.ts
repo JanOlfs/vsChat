@@ -1,6 +1,7 @@
 import { Component, inject, resource, signal } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
+import { RoundControlService } from '../../services/round-control.service';
 import type { CategoryWithCount } from '../../models/types';
 
 @Component({
@@ -10,6 +11,10 @@ import type { CategoryWithCount } from '../../models/types';
 export class Admin {
   private readonly categoryService = inject(CategoryService);
   private readonly applicationService = inject(ApplicationService);
+  private readonly roundControl = inject(RoundControlService);
+
+  // Läuft gerade eine Runden-Steuerungs-Aktion (Check-in/Voting), Buttons währenddessen sperren.
+  protected readonly roundBusy = signal(false);
 
   protected readonly categories = resource({
     loader: () => this.categoryService.getCategories(),
@@ -64,6 +69,34 @@ export class Admin {
     } catch {
       this.error.set('Banner konnte nicht hochgeladen werden.');
     }
+  }
+
+  protected async runRoundAction(action: () => Promise<void>, failureMessage: string): Promise<void> {
+    this.error.set(null);
+    this.roundBusy.set(true);
+    try {
+      await action();
+    } catch {
+      this.error.set(failureMessage);
+    } finally {
+      this.roundBusy.set(false);
+    }
+  }
+
+  protected openCheckin(slug: string): void {
+    void this.runRoundAction(() => this.roundControl.openCheckin(slug), 'Check-in konnte nicht geöffnet werden.');
+  }
+
+  protected closeCheckin(): void {
+    void this.runRoundAction(() => this.roundControl.closeCheckin(), 'Check-in konnte nicht geschlossen werden.');
+  }
+
+  protected startVote(): void {
+    void this.runRoundAction(() => this.roundControl.startVote(), 'Voting konnte nicht gestartet werden.');
+  }
+
+  protected closeVote(): void {
+    void this.runRoundAction(() => this.roundControl.closeVote(), 'Voting konnte nicht beendet werden.');
   }
 
   protected async resetCategory(categoryId: string): Promise<void> {

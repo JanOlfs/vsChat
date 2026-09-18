@@ -4,6 +4,18 @@
   <p role="alert">{{ error() }}</p>
 }
 
+<section class="admin-applicants">
+  <h2>Runden-Steuerung</h2>
+  <p class="muted">
+    Alternative zu den Chat-Befehlen (!opencheckin, !closecheckin, !startvote, !closevote), löst
+    dieselbe Aktion beim Bot aus, inklusive Ansage im Chat. "Check-in öffnen" steht pro Kategorie
+    unten in der Tabelle.
+  </p>
+  <button type="button" [disabled]="roundBusy()" (click)="closeCheckin()">Check-in schließen</button>
+  <button type="button" [disabled]="roundBusy()" (click)="startVote()">Voting starten</button>
+  <button type="button" [disabled]="roundBusy()" (click)="closeVote()">Voting beenden</button>
+</section>
+
 @if (categories.isLoading()) {
   <p>Lade Kategorien …</p>
 } @else if (categories.error()) {
@@ -37,6 +49,9 @@
             </button>
             <button type="button" (click)="manageApplicants(category.id)">
               {{ selectedCategoryId() === category.id ? 'Bewerber ausblenden' : 'Bewerber verwalten' }}
+            </button>
+            <button type="button" [disabled]="roundBusy() || !category.is_open" (click)="openCheckin(category.slug)">
+              Check-in öffnen
             </button>
           </td>
         </tr>

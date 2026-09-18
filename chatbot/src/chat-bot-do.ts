@@ -74,10 +74,38 @@ export class ChatBotDo implements DurableObject {
     })();
   }
 
-  async fetch(_request: Request): Promise<Response> {
+  async fetch(request: Request): Promise<Response> {
     await this.ready;
     await this.ensureConnected();
-    return new Response('ok');
+
+    const url = new URL(request.url);
+    try {
+      switch (url.pathname) {
+        case '/opencheckin': {
+          const body = (await request.json()) as { slug?: string };
+          await this.openCheckin(body.slug ?? '');
+          break;
+        }
+        case '/closecheckin':
+          await this.closeCheckin();
+          break;
+        case '/startvote':
+          await this.startVote();
+          break;
+        case '/closevote':
+          await this.closeVote();
+          break;
+        default:
+          break; // Keepalive-Ping, kein Kommando.
+      }
+    } catch (err) {
+      return new Response(JSON.stringify({ error: String(err) }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
   }
 
   async alarm(): Promise<void> {

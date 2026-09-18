@@ -8,7 +8,9 @@
   "vars": {
     "TWITCH_BOT_USERNAME": "kapitanbot",
     "TWITCH_CHANNEL": "captnblacky",
-    "SUPABASE_URL": "https://egatvfjimsrybmzhlzts.supabase.co"
+    "SUPABASE_URL": "https://egatvfjimsrybmzhlzts.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_Mz5ADI9_djB6AyfGhixtdw_-RUHGFMp",
+    "FRONTEND_ORIGIN": "https://twitch.captnblacky.workers.dev"
   },
   "durable_objects": {
     "bindings": [{ "name": "CHAT_BOT", "class_name": "ChatBotDo" }]

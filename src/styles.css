@@ -594,3 +594,15 @@ app-overlay .overlay-panel li.applicant.checked-in {
   color: var(--red);
   text-shadow: 0 0 8px var(--red-glow);
 }
+
+/* Klein und dezent, nur zum Prüfen ob ein Deploy schon live ist. */
+.version-badge {
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0.35rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 10;
+}

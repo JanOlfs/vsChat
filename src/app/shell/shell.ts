@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { APP_VERSION } from '../version';
 
 /**
  * Kopf- und Fußzeile für die normalen Seiten. `/overlay` (später) bekommt
@@ -14,6 +15,7 @@ import { AuthService } from '../services/auth.service';
 export class Shell {
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
+  protected readonly version = APP_VERSION;
 
   protected async login(): Promise<void> {
     await this.auth.loginWithTwitch(this.router.url);

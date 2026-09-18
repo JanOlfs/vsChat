@@ -211,6 +211,11 @@ main {
   clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
 }
 
+/* Solange kein Bannerbild hinterlegt ist. */
+.category-banner.placeholder {
+  background-image: linear-gradient(135deg, var(--bg-elevated-2) 0%, var(--red-dark) 65%, var(--blue) 130%);
+}
+
 /* Sanftes Aufklappen ohne feste Höhe zu kennen (CSS-Grid-Trick). */
 .category-expand {
   display: grid;

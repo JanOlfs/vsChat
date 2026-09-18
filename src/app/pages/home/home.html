@@ -25,9 +25,11 @@
                 <span class="badge">geschlossen</span>
               }
             </div>
-            @if (category.banner_url) {
-              <div class="category-banner" [style.background-image]="'url(' + category.banner_url + ')'"></div>
-            }
+            <div
+              class="category-banner"
+              [class.placeholder]="!category.banner_url"
+              [style.background-image]="category.banner_url ? 'url(' + category.banner_url + ')' : null"
+            ></div>
           </button>
           <div class="category-expand">
             <div class="category-expand-inner">

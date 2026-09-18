@@ -1,0 +1,59 @@
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (board.value(); as b) {
+  <h1>{{ b.name }}</h1>
+  <p class="muted">Gegen {{ b.opponent_twitch_login }} – Status: {{ b.status }}</p>
+
+  @if (b.status === 'setup') {
+    <button type="button" [disabled]="!allCellsFilled" (click)="startBoard()">
+      Spiel starten{{ allCellsFilled ? '' : ' (erst alle 25 Felder befüllen)' }}
+    </button>
+  }
+  @if (b.status !== 'finished') {
+    <button type="button" (click)="finishBoard()">Spiel beenden</button>
+  }
+
+  <p>
+    Overlay-Link: <code>{{ overlayUrl }}</code>
+  </p>
+}
+
+<h2>Kategorien-Pool</h2>
+<p class="muted">Anklicken zum Auswählen, dann ein leeres Feld unten anklicken, um es dort zu platzieren.</p>
+@if (categories.value(); as cats) {
+  <ul class="simple-list">
+    @for (category of cats; track category.id) {
+      <li [class.selected]="selectedCategoryId() === category.id">
+        <span (click)="selectCategory(category.id)">{{ category.label }}</span>
+        <button type="button" (click)="deleteCategory(category.id)">Löschen</button>
+      </li>
+    } @empty {
+      <li class="muted">Noch keine Kategorien.</li>
+    }
+  </ul>
+}
+<form class="admin-form" (submit)="addCategory($event, labelInput)">
+  <label>
+    Neue Kategorie
+    <input #labelInput type="text" placeholder="z.B. Double Kill in League" required />
+  </label>
+  <button type="submit">Hinzufügen</button>
+</form>
+
+<h2>Board (5x5)</h2>
+@if (cells.value(); as boardCells) {
+  <div class="bingo-grid">
+    @for (cell of boardCells; track cell.id) {
+      <button
+        type="button"
+        class="bingo-cell"
+        [class.filled]="cell.category_id"
+        (click)="onCellClick(cell)"
+      >
+        {{ cell.category?.label ?? '—' }}
+      </button>
+    }
+  </div>
+}

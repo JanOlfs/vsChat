@@ -365,12 +365,14 @@ main {
 }
 
 /* Overlay (OBS Browser Source): kein eigener Seitenhintergrund (transparent, siehe
-   overlay.ts), Panel im Kanal-Look. */
-app-overlay {
+   overlay.ts/bingo-overlay.ts), Panel im Kanal-Look. Ungescoped (nicht an
+   app-overlay gebunden), damit app-bingo-overlay dasselbe Panel nutzen kann. */
+app-overlay,
+app-bingo-overlay {
   display: block;
 }
 
-app-overlay .overlay-panel {
+.overlay-panel {
   display: inline-block;
   min-width: 16rem;
   margin: 1rem;
@@ -383,32 +385,32 @@ app-overlay .overlay-panel {
   font-family: system-ui, sans-serif;
 }
 
-app-overlay .overlay-panel h2 {
+.overlay-panel h2 {
   margin: 0 0 0.5rem;
   font-size: 1.3rem;
   color: var(--red);
   text-shadow: 0 0 8px var(--red-glow);
 }
 
-app-overlay .overlay-panel ul {
+.overlay-panel ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-app-overlay .overlay-panel li {
+.overlay-panel li {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   padding: 0.15rem 0;
 }
 
-app-overlay .overlay-panel .votes {
+.overlay-panel .votes {
   font-weight: bold;
   color: var(--blue);
 }
 
-app-overlay .overlay-panel .muted {
+.overlay-panel .muted {
   opacity: 0.7;
 }
 
@@ -419,4 +421,66 @@ app-overlay .overlay-panel li.applicant {
 
 app-overlay .overlay-panel li.applicant.checked-in {
   color: var(--green);
+}
+
+/* Lockout-Bingo-Board, genutzt von Anordnen-/Spiel-/Overlay-Seite. */
+.bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+  max-width: 40rem;
+}
+
+.bingo-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-transform: none;
+  font-family: system-ui, sans-serif;
+  letter-spacing: normal;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  margin: 0;
+}
+
+.bingo-cell.filled {
+  border-color: var(--blue);
+}
+
+.bingo-cell.claimed-a {
+  background: var(--red-dark);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.bingo-cell.claimed-b {
+  background: #1e3a5f;
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.bingo-cell.winning-line {
+  box-shadow: 0 0 0 3px #fbbf24 inset;
+}
+
+.simple-list li.selected {
+  border-color: var(--blue);
+}
+
+.bingo-overlay-panel .bingo-cell {
+  font-size: 0.65rem;
+}
+
+.bingo-winner {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  color: var(--red);
+  text-shadow: 0 0 8px var(--red-glow);
 }

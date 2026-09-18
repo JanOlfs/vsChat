@@ -1,0 +1,26 @@
+@if (board.value(); as b) {
+  <div class="overlay-panel bingo-overlay-panel">
+    <h2>{{ b.name }}</h2>
+
+    @if (cells.value(); as boardCells) {
+      <div class="bingo-grid">
+        @for (cell of boardCells; track cell.id) {
+          <div
+            class="bingo-cell"
+            [class.claimed-a]="cell.claimed_by && cell.claimed_by === b.created_by"
+            [class.claimed-b]="cell.claimed_by && cell.claimed_by !== b.created_by"
+            [class.winning-line]="winner?.line?.includes(cell.position)"
+          >
+            {{ cell.category?.label ?? '' }}
+          </div>
+        }
+      </div>
+    }
+
+    @if (winner; as w) {
+      <p class="bingo-winner">
+        Bingo! {{ w.profileId === b.created_by ? b.created_by_profile?.display_name : b.opponent_twitch_login }}
+      </p>
+    }
+  </div>
+}

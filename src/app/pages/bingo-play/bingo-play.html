@@ -1,0 +1,37 @@
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (board.value(); as b) {
+  <h1>{{ b.name }}</h1>
+  <p class="muted">Gegen {{ b.opponent_twitch_login }} – Status: {{ b.status }}</p>
+
+  @if (!isPlayer) {
+    <p class="muted">Du bist nicht Teil dieser Spielfläche, nur Zuschauer-Ansicht.</p>
+  }
+
+  @if (winner; as w) {
+    <p role="alert">
+      Bingo! {{ w.profileId === b.created_by ? b.created_by_profile?.display_name : b.opponent_twitch_login }} hat
+      gewonnen {{ w.line ? '(Reihe/Spalte/Diagonale)' : '(13+ Felder)' }}.
+    </p>
+  }
+}
+
+@if (cells.value(); as boardCells) {
+  <div class="bingo-grid">
+    @for (cell of boardCells; track cell.id) {
+      <button
+        type="button"
+        class="bingo-cell"
+        [class.claimed-a]="cell.claimed_by && cell.claimed_by === board.value()?.created_by"
+        [class.claimed-b]="cell.claimed_by && cell.claimed_by !== board.value()?.created_by"
+        [class.winning-line]="winner?.line?.includes(cell.position)"
+        [disabled]="!!cell.claimed_by || board.value()?.status !== 'active' || !isPlayer"
+        (click)="claim(cell)"
+      >
+        {{ cell.category?.label ?? '—' }}
+      </button>
+    }
+  </div>
+}

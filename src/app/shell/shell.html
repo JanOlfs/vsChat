@@ -8,6 +8,7 @@
       <a routerLink="/meine-bewerbungen">Meine Bewerbungen</a>
       @if (auth.currentProfile()?.is_admin) {
         <a routerLink="/admin">Admin</a>
+        <a routerLink="/bingo">Bingo</a>
       }
       <span class="user">{{ auth.currentProfile()?.display_name }}</span>
       <button type="button" (click)="logout()">Logout</button>

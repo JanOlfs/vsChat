@@ -1,0 +1,40 @@
+<h1>Lockout Bingo</h1>
+
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (boards.isLoading()) {
+  <p>Lade Spielflächen …</p>
+} @else if (boards.error()) {
+  <p role="alert">Spielflächen konnten nicht geladen werden.</p>
+} @else {
+  <ul class="simple-list">
+    @for (board of boards.value(); track board.id) {
+      <li>
+        <span>
+          {{ board.name }} (gegen {{ board.opponent_twitch_login }}) – {{ board.status }}
+        </span>
+        <span>
+          <a [routerLink]="['/bingo', board.id, 'arrange']">Anordnen</a>
+          <a [routerLink]="['/bingo', board.id, 'play']">Spielen</a>
+        </span>
+      </li>
+    } @empty {
+      <li class="muted">Noch keine Spielfläche angelegt.</li>
+    }
+  </ul>
+}
+
+<h2>Neue Spielfläche</h2>
+<form class="admin-form" (submit)="createBoard($event, nameInput, opponentInput)">
+  <label>
+    Name
+    <input #nameInput type="text" placeholder="z.B. vs. Max" required />
+  </label>
+  <label>
+    Gegner (Twitch-Login)
+    <input #opponentInput type="text" placeholder="twitchname" required />
+  </label>
+  <button type="submit">Anlegen</button>
+</form>

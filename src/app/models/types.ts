@@ -56,3 +56,36 @@ export interface LiveRound {
   updated_at: string;
   category: Category | null;
 }
+
+export type BingoBoardStatus = 'setup' | 'active' | 'finished';
+
+export interface BingoBoard {
+  id: string;
+  name: string;
+  opponent_twitch_login: string;
+  status: BingoBoardStatus;
+  created_by: string;
+  created_at: string;
+  created_by_profile: Profile | null;
+}
+
+export interface BingoCategory {
+  id: string;
+  board_id: string;
+  label: string;
+  created_at: string;
+}
+
+export interface BingoCell {
+  id: string;
+  board_id: string;
+  position: number;
+  category_id: string | null;
+  claimed_by: string | null;
+  claimed_at: string | null;
+}
+
+export interface BingoCellWithDetails extends BingoCell {
+  category: BingoCategory | null;
+  claimed_by_profile: Profile | null;
+}

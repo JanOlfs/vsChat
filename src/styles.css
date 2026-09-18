@@ -358,6 +358,18 @@ main {
   gap: 0.3rem;
 }
 
+.banner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.banner-confirm {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  line-height: 1;
+}
+
 .banner-filename {
   margin: 0;
   font-size: 0.8em;

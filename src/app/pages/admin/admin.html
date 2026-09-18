@@ -69,19 +69,28 @@
           <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
           <td>
             <div class="banner-upload">
-              <div class="banner-picker">
-                <button type="button" class="banner-picker-upload" (click)="bannerInput.click()">Bild hochladen</button>
-                <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
-                  Bild einfügen (Strg+V)
+              <div class="banner-row">
+                <div class="banner-picker">
+                  <button type="button" class="banner-picker-upload" (click)="bannerInput.click()">Bild hochladen</button>
+                  <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+                    Bild einfügen (Strg+V)
+                  </div>
+                  <input #bannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
                 </div>
-                <input #bannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
+                <button
+                  type="button"
+                  class="banner-confirm"
+                  [disabled]="!bannerInput.files?.length"
+                  (click)="saveBanner(category, bannerInput)"
+                  title="Hochladen"
+                  aria-label="Hochladen"
+                >
+                  ⬆
+                </button>
               </div>
               @if (bannerInput.files?.[0]; as file) {
                 <p class="banner-filename">{{ file.name }}</p>
               }
-              <button type="button" [disabled]="!bannerInput.files?.length" (click)="saveBanner(category, bannerInput)">
-                Hochladen
-              </button>
             </div>
           </td>
           <td>

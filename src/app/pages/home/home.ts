@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject, input, resource } from '@angular/core';
 import { Router } from '@angular/router';
 import { CategoryService } from '../../services/category.service';
+import { MatchService } from '../../services/match.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { CategoryDetail } from '../category-detail/category-detail';
 
@@ -11,6 +12,7 @@ import { CategoryDetail } from '../category-detail/category-detail';
 })
 export class Home {
   private readonly categoryService = inject(CategoryService);
+  private readonly matchService = inject(MatchService);
   private readonly router = inject(Router);
   private readonly supabase = inject(SupabaseService);
 
@@ -23,12 +25,17 @@ export class Home {
     loader: () => this.categoryService.getCategories(),
   });
 
+  protected readonly matches = resource({
+    loader: () => this.matchService.getMatches(),
+  });
+
   constructor() {
-    // Bewerbungszahlen live halten, ohne dass wer die Seite neu laden muss.
+    // Bewerbungszahlen und Ergebnisliste live halten, ohne dass wer die Seite neu laden muss.
     const channel = this.supabase.client
       .channel('home-categories')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => this.categories.reload())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => this.categories.reload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => this.matches.reload())
       .subscribe();
     inject(DestroyRef).onDestroy(() => void this.supabase.client.removeChannel(channel));
   }

@@ -137,6 +137,42 @@
   </div>
 }
 
+<div class="admin-applicants">
+  <h2>Ergebnisse</h2>
+
+  @if (matches.isLoading()) {
+    <p>Lade Ergebnisse …</p>
+  } @else if (matches.error()) {
+    <p role="alert">Ergebnisse konnten nicht geladen werden.</p>
+  } @else {
+    <ul>
+      @for (match of matches.value(); track match.id) {
+        <li>
+          {{ match.category.name }} vs. {{ match.profile.display_name }}
+          <button
+            type="button"
+            class="winner-button"
+            [class.selected-winner]="match.winner === 'streamer'"
+            (click)="setMatchWinner(match.id, 'streamer')"
+          >
+            Ich hab gewonnen
+          </button>
+          <button
+            type="button"
+            class="winner-button"
+            [class.selected-winner]="match.winner === 'challenger'"
+            (click)="setMatchWinner(match.id, 'challenger')"
+          >
+            Chat hat gewonnen
+          </button>
+        </li>
+      } @empty {
+        <li class="muted">Noch keine Matches gespielt.</li>
+      }
+    </ul>
+  }
+</div>
+
 <h2>Neue Kategorie</h2>
 <form class="admin-form" (submit)="createCategory($event, slugInput, nameInput, descriptionInput, bannerInput)">
   <label>

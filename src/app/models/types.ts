@@ -39,6 +39,22 @@ export interface ApplicationWithCategory extends Application {
   category: Category;
 }
 
+export type MatchWinner = 'streamer' | 'challenger';
+
+export interface Match {
+  id: string;
+  category_id: string;
+  profile_id: string;
+  vote_counts: Record<string, number>;
+  winner: MatchWinner | null;
+  created_at: string;
+}
+
+export interface MatchWithDetails extends Match {
+  category: Category;
+  profile: Profile;
+}
+
 export type RoundPhase = 'idle' | 'checkin' | 'voting';
 
 export interface CheckedInViewer {

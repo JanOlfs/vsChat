@@ -4,8 +4,9 @@ import { ApplicationService } from '../../services/application.service';
 import { RoundControlService } from '../../services/round-control.service';
 import { LiveRoundService } from '../../services/live-round.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { MatchService } from '../../services/match.service';
 import { SupabaseService } from '../../services/supabase.service';
-import type { CategoryWithCount } from '../../models/types';
+import type { CategoryWithCount, MatchWinner } from '../../models/types';
 
 // Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
 // Verbindung mal hängt (z.B. Laptop kurz im Standby).
@@ -21,6 +22,7 @@ export class Admin {
   private readonly roundControl = inject(RoundControlService);
   private readonly liveRoundService = inject(LiveRoundService);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly matchService = inject(MatchService);
   private readonly supabase = inject(SupabaseService);
 
   // Läuft gerade eine Runden-Steuerungs-Aktion (Check-in/Voting), Buttons währenddessen sperren.
@@ -45,6 +47,10 @@ export class Admin {
     loader: ({ params }) => this.applicationService.getApplicationsForCategory(params),
   });
 
+  protected readonly matches = resource({
+    loader: () => this.matchService.getMatches(),
+  });
+
   constructor() {
     const channel = this.supabase.client
       .channel('admin')
@@ -54,6 +60,7 @@ export class Admin {
         this.applicants.reload();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_round' }, () => this.liveRound.reload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => this.matches.reload())
       .subscribe();
     const interval = setInterval(() => this.liveRound.reload(), FALLBACK_POLL_INTERVAL_MS);
 
@@ -218,6 +225,17 @@ export class Admin {
       this.categories.reload();
     } catch {
       this.error.set('Kategorie konnte nicht angelegt werden, ist der Slug schon vergeben?');
+    }
+  }
+
+  protected async setMatchWinner(matchId: string, winner: MatchWinner): Promise<void> {
+    this.error.set(null);
+    try {
+      await this.matchService.setMatchWinner(matchId, winner);
+      this.matches.reload();
+    } catch (err) {
+      console.error(err);
+      this.error.set('Ergebnis konnte nicht gespeichert werden.');
     }
   }
 }

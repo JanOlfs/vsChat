@@ -83,6 +83,28 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Ergebnis-Buttons in der Admin-Ansicht: zeigt, welche Seite aktuell als
+   Gewinner eingetragen ist, statt beide dauerhaft in Marken-Rot zu zeigen. */
+.winner-button {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.winner-button.selected-winner {
+  background: var(--green);
+  border-color: var(--green);
+  color: #0a2e18;
+}
+
+.admin-applicants .winner-button:hover:not(:disabled) {
+  background: var(--bg-elevated-2);
+}
+
+.admin-applicants .winner-button.selected-winner:hover:not(:disabled) {
+  background: var(--green);
+}
+
 input {
   background: var(--bg-elevated);
   border: 1px solid var(--border);

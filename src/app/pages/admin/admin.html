@@ -68,10 +68,17 @@
           <td>{{ category.applicant_count }}</td>
           <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
           <td>
-            <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
-              <input #bannerInput type="file" accept="image/*" />
+            <div class="banner-upload">
+              <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+                <input #bannerInput type="file" accept="image/*" (change)="onBannerFileChange()" />
+              </div>
+              @if (bannerInput.files?.[0]; as file) {
+                <p class="banner-filename">{{ file.name }}</p>
+              }
+              <button type="button" [disabled]="!bannerInput.files?.length" (click)="saveBanner(category, bannerInput)">
+                Hochladen
+              </button>
             </div>
-            <button type="button" (click)="saveBanner(category, bannerInput)">Hochladen</button>
           </td>
           <td>
             <button type="button" (click)="toggleOpen(category)">
@@ -133,8 +140,13 @@
   </label>
   <label>
     Banner-Bild (optional, ca. 5:1)
-    <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
-      <input #bannerInput type="file" accept="image/*" />
+    <div class="banner-upload">
+      <div class="paste-zone" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
+        <input #bannerInput type="file" accept="image/*" (change)="onBannerFileChange()" />
+      </div>
+      @if (bannerInput.files?.[0]; as file) {
+        <p class="banner-filename">{{ file.name }}</p>
+      }
     </div>
   </label>
   <button type="submit">Anlegen</button>

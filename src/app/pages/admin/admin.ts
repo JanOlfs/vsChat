@@ -82,6 +82,9 @@ export class Admin {
     }
   }
 
+  /** Kein Effekt, der Aufruf sorgt nur dafür, dass Angular nach der nativen Dateiauswahl neu rendert. */
+  protected onBannerFileChange(): void {}
+
   protected async saveBanner(category: CategoryWithCount, bannerEl: HTMLInputElement): Promise<void> {
     const file = bannerEl.files?.[0];
     if (!file) {

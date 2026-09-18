@@ -342,6 +342,19 @@ main {
   margin-top: 0.2rem;
 }
 
+.banner-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.banner-filename {
+  margin: 0;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
 .admin-applicants {
   border: 1px solid var(--border);
   background: var(--bg-elevated);

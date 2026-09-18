@@ -56,7 +56,7 @@
         <th>Slug</th>
         <th>Bewerbungen</th>
         <th>Status</th>
-        <th>Banner (ca. 5:1)</th>
+        <th>Banner</th>
         <th></th>
       </tr>
     </thead>
@@ -68,30 +68,11 @@
           <td>{{ category.applicant_count }}</td>
           <td>{{ category.is_open ? 'offen' : 'geschlossen' }}</td>
           <td>
-            <div class="banner-upload">
-              <div class="banner-row">
-                <div class="banner-picker">
-                  <button type="button" class="banner-picker-upload" (click)="bannerInput.click()">Bild hochladen</button>
-                  <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, bannerInput)">
-                    Bild einfügen (Strg+V)
-                  </div>
-                  <input #bannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
-                </div>
-                <button
-                  type="button"
-                  class="banner-confirm"
-                  [disabled]="!bannerInput.files?.length"
-                  (click)="saveBanner(category, bannerInput)"
-                  title="Hochladen"
-                  aria-label="Hochladen"
-                >
-                  ⬆
-                </button>
-              </div>
-              @if (bannerInput.files?.[0]; as file) {
-                <p class="banner-filename">{{ file.name }}</p>
-              }
-            </div>
+            @if (category.banner_url) {
+              <img [src]="category.banner_url" alt="" class="banner-thumbnail" />
+            } @else {
+              <span class="muted">kein Bild</span>
+            }
           </td>
           <td>
             <button type="button" (click)="toggleOpen(category)">
@@ -100,6 +81,7 @@
             <button type="button" (click)="manageApplicants(category.id)">
               {{ selectedCategoryId() === category.id ? 'Bewerber ausblenden' : 'Bewerber verwalten' }}
             </button>
+            <button type="button" (click)="openEditCategory(category)">Kategorie bearbeiten</button>
             @if (!liveRound.value()?.category_id) {
               <button type="button" [disabled]="roundBusy() || !category.is_open" (click)="openCheckin(category.slug)">
                 Check-in öffnen
@@ -110,6 +92,53 @@
       }
     </tbody>
   </table>
+}
+
+@if (editingCategory(); as category) {
+  <div class="modal-backdrop" (click)="closeEditCategory()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Kategorie bearbeiten</h2>
+      <form
+        class="admin-form"
+        (submit)="saveEditCategory($event, category, editSlugInput, editNameInput, editDescriptionInput, editBannerInput)"
+      >
+        <label>
+          Slug
+          <input #editSlugInput type="text" [value]="category.slug" required />
+        </label>
+        <label>
+          Name
+          <input #editNameInput type="text" [value]="category.name" required />
+        </label>
+        <label>
+          Beschreibung (optional)
+          <input #editDescriptionInput type="text" [value]="category.description ?? ''" />
+        </label>
+        <label>
+          Banner-Bild (optional, ca. 5:1)
+          <div class="banner-upload">
+            @if (category.banner_url) {
+              <img [src]="category.banner_url" alt="" class="banner-thumbnail" />
+            }
+            <div class="banner-picker">
+              <button type="button" class="banner-picker-upload" (click)="editBannerInput.click()">Bild hochladen</button>
+              <div class="banner-picker-paste" tabindex="0" (paste)="onPasteImage($event, editBannerInput)">
+                Bild einfügen (Strg+V)
+              </div>
+              <input #editBannerInput type="file" accept="image/*" hidden (change)="onBannerFileChange()" />
+            </div>
+            @if (editBannerInput.files?.[0]; as file) {
+              <p class="banner-filename">{{ file.name }}</p>
+            }
+          </div>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel" (click)="closeEditCategory()">Abbrechen</button>
+          <button type="submit">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
 }
 
 @if (selectedCategoryId(); as categoryId) {

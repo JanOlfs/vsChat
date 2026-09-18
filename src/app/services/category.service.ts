@@ -58,6 +58,19 @@ export class CategoryService {
     return data;
   }
 
+  async updateCategory(
+    id: string,
+    input: { slug: string; name: string; description: string | null },
+  ): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('categories')
+      .update({ slug: input.slug, name: input.name, description: input.description })
+      .eq('id', id);
+    if (error) {
+      throw error;
+    }
+  }
+
   async setCategoryOpen(id: string, isOpen: boolean): Promise<void> {
     const { error } = await this.supabase.client.from('categories').update({ is_open: isOpen }).eq('id', id);
     if (error) {

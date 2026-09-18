@@ -380,16 +380,12 @@ main {
   gap: 0.3rem;
 }
 
-.banner-row {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.banner-confirm {
-  margin: 0;
-  padding: 0.4rem 0.6rem;
-  line-height: 1;
+.banner-thumbnail {
+  max-width: 8rem;
+  max-height: 2.5rem;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
 }
 
 .banner-filename {

@@ -118,19 +118,52 @@ export class Admin {
   /** Kein Effekt, der Aufruf sorgt nur dafür, dass Angular nach der nativen Dateiauswahl neu rendert. */
   protected onBannerFileChange(): void {}
 
-  protected async saveBanner(category: CategoryWithCount, bannerEl: HTMLInputElement): Promise<void> {
-    const file = bannerEl.files?.[0];
-    if (!file) {
+  // Bearbeiten-Modal: Name, Slug, Beschreibung und Banner zusammen in einem
+  // Rutsch anpassen, statt Banner separat inline in der Tabelle.
+  protected readonly editingCategory = signal<CategoryWithCount | null>(null);
+
+  protected openEditCategory(category: CategoryWithCount): void {
+    this.editingCategory.set(category);
+  }
+
+  protected closeEditCategory(): void {
+    this.editingCategory.set(null);
+  }
+
+  protected async saveEditCategory(
+    event: Event,
+    category: CategoryWithCount,
+    slugEl: HTMLInputElement,
+    nameEl: HTMLInputElement,
+    descriptionEl: HTMLInputElement,
+    bannerEl: HTMLInputElement,
+  ): Promise<void> {
+    event.preventDefault();
+    const slug = slugEl.value.trim();
+    const name = nameEl.value.trim();
+    if (!slug || !name) {
+      this.error.set('Slug und Name sind Pflichtfelder.');
       return;
     }
+
     this.error.set(null);
     try {
-      const url = await this.categoryService.uploadBanner(category.slug, file);
-      await this.categoryService.setCategoryBanner(category.id, url);
-      bannerEl.value = '';
+      await this.categoryService.updateCategory(category.id, {
+        slug,
+        name,
+        description: descriptionEl.value.trim() || null,
+      });
+
+      const file = bannerEl.files?.[0];
+      if (file) {
+        const url = await this.categoryService.uploadBanner(slug, file);
+        await this.categoryService.setCategoryBanner(category.id, url);
+      }
+
+      this.editingCategory.set(null);
       this.categories.reload();
     } catch {
-      this.error.set('Banner konnte nicht hochgeladen werden.');
+      this.error.set('Kategorie konnte nicht gespeichert werden, ist der Slug schon vergeben?');
     }
   }
 

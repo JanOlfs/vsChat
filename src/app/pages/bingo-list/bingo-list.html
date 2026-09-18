@@ -20,7 +20,7 @@
         </button>
       </li>
     } @empty {
-      <li class="muted">Noch keine Spielfläche angelegt.</li>
+      <li class="muted">Noch keine Spielfläche{{ auth.currentProfile()?.is_admin ? '' : ' für dich' }} angelegt.</li>
     }
   </ul>
 }

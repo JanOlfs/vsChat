@@ -299,6 +299,9 @@ main {
   height: 2.5rem;
   padding-top: 0;
   padding-bottom: 0;
+  /* Der globale Button-Rand (margin-bottom) verschiebt sonst beim
+     align-items:flex-end den Button nach oben, das Inputfeld hat keinen Rand. */
+  margin-bottom: 0;
 }
 
 .admin-form label {

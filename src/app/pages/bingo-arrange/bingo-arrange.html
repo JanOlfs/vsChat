@@ -21,19 +21,17 @@
 }
 
 <h2>Kategorien-Pool</h2>
-<p class="muted">Kategorie unten ins Feld ziehen, um sie dort zu platzieren. Ein Klick auf ein befülltes Feld macht es wieder leer.</p>
-@if (categories.value(); as cats) {
-  <ul class="simple-list">
-    @for (category of cats; track category.id) {
-      <li draggable="true" (dragstart)="onDragStart($event, category.id)" class="draggable">
-        <span>{{ category.label }}</span>
-        <button type="button" (click)="deleteCategory(category.id)">Löschen</button>
-      </li>
-    } @empty {
-      <li class="muted">Noch keine Kategorien.</li>
-    }
-  </ul>
-}
+<p class="muted">Kachel ins Feld ziehen, um sie dort zu platzieren. Platzierte Kategorien verschwinden hier aus der Liste.</p>
+<div class="bingo-pool">
+  @for (category of unassignedCategories; track category.id) {
+    <div class="bingo-tile" draggable="true" (dragstart)="onDragStart($event, category.id)">
+      {{ category.label }}
+      <span class="bingo-tile-remove" (click)="deleteCategory(category.id)">×</span>
+    </div>
+  } @empty {
+    <p class="muted">Alle Kategorien sind platziert, oder es gibt noch keine.</p>
+  }
+</div>
 <form class="admin-form" (submit)="addCategory($event, labelInput)">
   <label>
     Neue Kategorie
@@ -46,14 +44,11 @@
 @if (cells.value(); as boardCells) {
   <div class="bingo-grid">
     @for (cell of boardCells; track cell.id) {
-      <div
-        class="bingo-cell"
-        [class.filled]="cell.category_id"
-        (dragover)="$event.preventDefault()"
-        (drop)="onDrop($event, cell)"
-        (click)="clearCell(cell)"
-      >
+      <div class="bingo-cell" [class.filled]="cell.category_id" (dragover)="$event.preventDefault()" (drop)="onDrop($event, cell)">
         {{ cell.category?.label ?? '—' }}
+        @if (cell.category_id) {
+          <span class="bingo-tile-remove" (click)="clearCell(cell)">×</span>
+        }
       </div>
     }
   </div>

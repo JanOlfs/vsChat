@@ -1,15 +1,16 @@
 import { Component, inject, resource, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
+import type { BingoBoard } from '../../models/types';
 
 @Component({
   selector: 'app-bingo-list',
-  imports: [RouterLink],
   templateUrl: './bingo-list.html',
 })
 export class BingoList {
   private readonly bingoService = inject(BingoService);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
 
   protected readonly error = signal<string | null>(null);
@@ -21,6 +22,12 @@ export class BingoList {
     },
     loader: ({ params }) => this.bingoService.getMyBoards(params.profileId, params.twitchLogin),
   });
+
+  /** Solange die Spielfläche im Setup ist, geht's zum Anordnen, danach zum Spielen. */
+  protected goToBoard(board: BingoBoard): void {
+    const segment = board.status === 'setup' ? 'arrange' : 'play';
+    void this.router.navigate(['/bingo', board.id, segment]);
+  }
 
   protected async createBoard(event: Event, nameEl: HTMLInputElement, opponentEl: HTMLInputElement): Promise<void> {
     event.preventDefault();

@@ -15,12 +15,9 @@
         <span>
           {{ board.name }} (gegen {{ board.opponent_twitch_login }}) – {{ board.status }}
         </span>
-        <span class="link-row">
-          @if (auth.currentProfile()?.is_admin) {
-            <a [routerLink]="['/bingo', board.id, 'arrange']">Anordnen</a>
-          }
-          <a [routerLink]="['/bingo', board.id, 'play']">Spielen</a>
-        </span>
+        <button type="button" (click)="goToBoard(board)">
+          {{ board.status === 'setup' ? 'Anordnen' : 'Spielen' }}
+        </button>
       </li>
     } @empty {
       <li class="muted">Noch keine Spielfläche angelegt.</li>

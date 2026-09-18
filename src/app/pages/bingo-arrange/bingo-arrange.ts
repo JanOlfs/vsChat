@@ -36,6 +36,12 @@ export class BingoArrange {
     return (this.cells.value() ?? []).every((cell) => cell.category_id !== null);
   }
 
+  /** Pool ohne die Kategorien, die schon auf einem Feld liegen. */
+  protected get unassignedCategories() {
+    const placedIds = new Set((this.cells.value() ?? []).map((cell) => cell.category_id).filter(Boolean));
+    return (this.categories.value() ?? []).filter((category) => !placedIds.has(category.id));
+  }
+
   protected onDragStart(event: DragEvent, categoryId: string): void {
     event.dataTransfer?.setData('text/plain', categoryId);
   }

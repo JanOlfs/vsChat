@@ -22,7 +22,7 @@ export const routes: Routes = [
       { path: 'auth/callback', component: AuthCallback },
       { path: 'admin', component: Admin, canActivate: [adminGuard] },
       { path: 'bingo', component: BingoList, canActivate: [authGuard] },
-      { path: 'bingo/:id/arrange', component: BingoArrange, canActivate: [adminGuard] },
+      { path: 'bingo/:id/arrange', component: BingoArrange, canActivate: [authGuard] },
       { path: 'bingo/:id/play', component: BingoPlay, canActivate: [authGuard] },
     ],
   },

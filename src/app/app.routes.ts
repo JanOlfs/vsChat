@@ -21,7 +21,7 @@ export const routes: Routes = [
       { path: 'meine-bewerbungen', component: MyApplications, canActivate: [authGuard] },
       { path: 'auth/callback', component: AuthCallback },
       { path: 'admin', component: Admin, canActivate: [adminGuard] },
-      { path: 'bingo', component: BingoList, canActivate: [adminGuard] },
+      { path: 'bingo', component: BingoList, canActivate: [authGuard] },
       { path: 'bingo/:id/arrange', component: BingoArrange, canActivate: [adminGuard] },
       { path: 'bingo/:id/play', component: BingoPlay, canActivate: [authGuard] },
     ],

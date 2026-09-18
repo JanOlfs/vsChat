@@ -10,7 +10,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class BingoList {
   private readonly bingoService = inject(BingoService);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
 
   protected readonly error = signal<string | null>(null);
 

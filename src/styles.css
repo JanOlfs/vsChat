@@ -469,8 +469,22 @@ app-overlay .overlay-panel li.applicant.checked-in {
   box-shadow: 0 0 0 3px #fbbf24 inset;
 }
 
-.simple-list li.selected {
-  border-color: var(--blue);
+.simple-list li.draggable {
+  cursor: grab;
+}
+
+.link-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.bingo-cell:not(.filled) {
+  border-style: dashed;
+  cursor: default;
+}
+
+.bingo-cell.filled {
+  cursor: pointer;
 }
 
 .bingo-overlay-panel .bingo-cell {

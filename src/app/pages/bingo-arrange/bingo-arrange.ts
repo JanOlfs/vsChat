@@ -12,7 +12,6 @@ export class BingoArrange {
   readonly id = input.required<string>();
 
   protected readonly error = signal<string | null>(null);
-  protected readonly selectedCategoryId = signal<string | null>(null);
 
   protected readonly board = resource({
     params: () => this.id(),
@@ -37,19 +36,33 @@ export class BingoArrange {
     return (this.cells.value() ?? []).every((cell) => cell.category_id !== null);
   }
 
-  protected selectCategory(categoryId: string): void {
-    this.selectedCategoryId.set(this.selectedCategoryId() === categoryId ? null : categoryId);
+  protected onDragStart(event: DragEvent, categoryId: string): void {
+    event.dataTransfer?.setData('text/plain', categoryId);
   }
 
-  protected async onCellClick(cell: BingoCellWithDetails): Promise<void> {
+  protected async onDrop(event: DragEvent, cell: BingoCellWithDetails): Promise<void> {
+    event.preventDefault();
+    const categoryId = event.dataTransfer?.getData('text/plain');
+    if (!categoryId) {
+      return;
+    }
     this.error.set(null);
     try {
-      if (cell.category_id) {
-        await this.bingoService.assignCategoryToCell(cell.id, null);
-      } else if (this.selectedCategoryId()) {
-        await this.bingoService.assignCategoryToCell(cell.id, this.selectedCategoryId());
-        this.selectedCategoryId.set(null);
-      }
+      await this.bingoService.assignCategoryToCell(cell.id, categoryId);
+      this.cells.reload();
+    } catch (err) {
+      console.error(err);
+      this.error.set('Zelle konnte nicht geändert werden.');
+    }
+  }
+
+  protected async clearCell(cell: BingoCellWithDetails): Promise<void> {
+    if (!cell.category_id) {
+      return;
+    }
+    this.error.set(null);
+    try {
+      await this.bingoService.assignCategoryToCell(cell.id, null);
       this.cells.reload();
     } catch (err) {
       console.error(err);

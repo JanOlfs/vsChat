@@ -21,12 +21,12 @@
 }
 
 <h2>Kategorien-Pool</h2>
-<p class="muted">Anklicken zum Auswählen, dann ein leeres Feld unten anklicken, um es dort zu platzieren.</p>
+<p class="muted">Kategorie unten ins Feld ziehen, um sie dort zu platzieren. Ein Klick auf ein befülltes Feld macht es wieder leer.</p>
 @if (categories.value(); as cats) {
   <ul class="simple-list">
     @for (category of cats; track category.id) {
-      <li [class.selected]="selectedCategoryId() === category.id">
-        <span (click)="selectCategory(category.id)">{{ category.label }}</span>
+      <li draggable="true" (dragstart)="onDragStart($event, category.id)" class="draggable">
+        <span>{{ category.label }}</span>
         <button type="button" (click)="deleteCategory(category.id)">Löschen</button>
       </li>
     } @empty {
@@ -46,14 +46,15 @@
 @if (cells.value(); as boardCells) {
   <div class="bingo-grid">
     @for (cell of boardCells; track cell.id) {
-      <button
-        type="button"
+      <div
         class="bingo-cell"
         [class.filled]="cell.category_id"
-        (click)="onCellClick(cell)"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop($event, cell)"
+        (click)="clearCell(cell)"
       >
         {{ cell.category?.label ?? '—' }}
-      </button>
+      </div>
     }
   </div>
 }

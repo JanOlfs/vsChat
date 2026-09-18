@@ -14,7 +14,9 @@
     <p role="alert">Die Spielfläche ist (wieder) im Bearbeitungsmodus, hier ist noch nichts zu claimen.</p>
   }
 
-  <button type="button" (click)="goToArrange()">Zurück zum Anordnen</button>
+  @if (auth.currentProfile()?.is_admin) {
+    <button type="button" (click)="goToArrange()">Zurück zum Anordnen</button>
+  }
 
   @if (winner; as w) {
     <p role="alert">

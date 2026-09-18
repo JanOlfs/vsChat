@@ -210,7 +210,7 @@ main {
 
 /* Bannerbild rechts, mit angeschrägter linker Kante. */
 .category-banner {
-  width: 9rem;
+  width: 20rem;
   flex-shrink: 0;
   background-size: cover;
   background-position: center;

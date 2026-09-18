@@ -9,14 +9,14 @@
 } @else if (applications.error()) {
   <p role="alert">Bewerbungen konnten nicht geladen werden.</p>
 } @else {
-  <ul>
+  <ul class="simple-list">
     @for (application of applications.value(); track application.id) {
       <li>
         {{ application.category.name }}
         <button type="button" (click)="withdraw(application)">Zurückziehen</button>
       </li>
     } @empty {
-      <li>Noch keine Bewerbungen.</li>
+      <li class="muted">Noch keine Bewerbungen.</li>
     }
   </ul>
 }

@@ -50,6 +50,14 @@ export class BingoArrange {
         void this.router.navigate(['/bingo', this.id(), 'play']);
       }
     });
+
+    // Wurde die Spielfläche (von wem auch immer) gelöscht, fliegt man zurück
+    // zur Übersicht statt auf einer leeren Seite hängen zu bleiben.
+    effect(() => {
+      if (!this.board.isLoading() && this.board.value() === null) {
+        void this.router.navigate(['/bingo']);
+      }
+    });
   }
 
   protected readonly overlayLinkCopied = signal(false);

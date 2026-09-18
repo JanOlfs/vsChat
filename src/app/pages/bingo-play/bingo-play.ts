@@ -46,6 +46,14 @@ export class BingoPlay {
         void this.router.navigate(['/bingo', this.id(), 'arrange']);
       }
     });
+
+    // Wurde die Spielfläche (von wem auch immer) gelöscht, fliegt man zurück
+    // zur Übersicht statt auf einer leeren Seite hängen zu bleiben.
+    effect(() => {
+      if (!this.board.isLoading() && this.board.value() === null) {
+        void this.router.navigate(['/bingo']);
+      }
+    });
   }
 
   protected get winner() {

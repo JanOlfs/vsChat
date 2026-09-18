@@ -1,17 +1,16 @@
 import { Component, DestroyRef, inject, resource } from '@angular/core';
 import { LiveRoundService } from '../../services/live-round.service';
 import { ApplicationService } from '../../services/application.service';
+import { SupabaseService } from '../../services/supabase.service';
 import type { LiveRound } from '../../models/types';
 
-const POLL_INTERVAL_MS = 2000;
+// Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
+// Verbindung mal hängt (z.B. Laptop kurz im Standby).
+const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 /**
  * Browser-Source für OBS: kein Kopf-/Fußzeile-Layout (eigene Top-Level-Route
  * ohne Shell, siehe app.routes.ts), transparenter Hintergrund.
- *
- * ponytail: Polling statt Supabase-Realtime-Subscription, weniger Code für
- * einen einzelnen Browser-Source-Viewer. Nachteil: bis zu 2s Verzögerung,
- * bei Bedarf auf Realtime umstellen.
  */
 @Component({
   selector: 'app-overlay',
@@ -20,6 +19,7 @@ const POLL_INTERVAL_MS = 2000;
 export class Overlay {
   private readonly liveRoundService = inject(LiveRoundService);
   private readonly applicationService = inject(ApplicationService);
+  private readonly supabase = inject(SupabaseService);
 
   protected readonly round = resource({
     loader: () => this.liveRoundService.getLiveRound(),
@@ -46,12 +46,18 @@ export class Overlay {
     document.documentElement.style.background = 'transparent';
     document.body.style.background = 'transparent';
 
-    const interval = setInterval(() => this.round.reload(), POLL_INTERVAL_MS);
+    const channel = this.supabase.client
+      .channel('overlay')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_round' }, () => this.round.reload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => this.applicants.reload())
+      .subscribe();
+    const interval = setInterval(() => this.round.reload(), FALLBACK_POLL_INTERVAL_MS);
 
     inject(DestroyRef).onDestroy(() => {
       document.documentElement.style.background = '';
       document.body.style.background = '';
       clearInterval(interval);
+      void this.supabase.client.removeChannel(channel);
     });
   }
 }

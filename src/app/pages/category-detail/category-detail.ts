@@ -1,8 +1,9 @@
-import { Component, inject, input, resource, signal } from '@angular/core';
+import { Component, effect, inject, input, resource, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
+import { SupabaseService } from '../../services/supabase.service';
 import type { ApplicationWithProfile } from '../../models/types';
 
 @Component({
@@ -13,6 +14,7 @@ export class CategoryDetail {
   private readonly router = inject(Router);
   private readonly categoryService = inject(CategoryService);
   private readonly applicationService = inject(ApplicationService);
+  private readonly supabase = inject(SupabaseService);
   protected readonly auth = inject(AuthService);
 
   readonly slug = input.required<string>();
@@ -31,6 +33,23 @@ export class CategoryDetail {
     },
     loader: ({ params }) => this.applicationService.getApplicationsForCategory(params.categoryId),
   });
+
+  constructor() {
+    // In einem effect(), weil das required input `slug` beim Konstruktor-Lauf
+    // noch keinen Wert hat, per onCleanup wird der Channel bei einer
+    // slug-Änderung oder Komponenten-Zerstörung sauber wieder abgebaut.
+    effect((onCleanup) => {
+      const slug = this.slug();
+      const channel = this.supabase.client
+        .channel(`category-detail-${slug}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => this.category.reload())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () =>
+          this.applications.reload(),
+        )
+        .subscribe();
+      onCleanup(() => void this.supabase.client.removeChannel(channel));
+    });
+  }
 
   protected myApplication(): ApplicationWithProfile | undefined {
     const profileId = this.auth.currentProfile()?.id;

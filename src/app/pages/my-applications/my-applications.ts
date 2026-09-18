@@ -1,6 +1,7 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, effect, inject, resource, signal } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ApplicationService } from '../../services/application.service';
+import { SupabaseService } from '../../services/supabase.service';
 import type { ApplicationWithCategory } from '../../models/types';
 
 @Component({
@@ -9,6 +10,7 @@ import type { ApplicationWithCategory } from '../../models/types';
 })
 export class MyApplications {
   private readonly applicationService = inject(ApplicationService);
+  private readonly supabase = inject(SupabaseService);
   protected readonly auth = inject(AuthService);
 
   protected readonly error = signal<string | null>(null);
@@ -20,6 +22,25 @@ export class MyApplications {
     },
     loader: ({ params }) => this.applicationService.getMyApplications(params.profileId),
   });
+
+  constructor() {
+    // Falls z.B. der Admin eine Bewerbung zurücksetzt, während man hier sitzt.
+    effect((onCleanup) => {
+      const profileId = this.auth.currentProfile()?.id;
+      if (!profileId) {
+        return;
+      }
+      const channel = this.supabase.client
+        .channel(`my-applications-${profileId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'applications', filter: `profile_id=eq.${profileId}` },
+          () => this.applications.reload(),
+        )
+        .subscribe();
+      onCleanup(() => void this.supabase.client.removeChannel(channel));
+    });
+  }
 
   protected async withdraw(application: ApplicationWithCategory): Promise<void> {
     this.error.set(null);

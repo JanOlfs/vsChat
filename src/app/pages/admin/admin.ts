@@ -1,10 +1,15 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, DestroyRef, inject, resource, signal } from '@angular/core';
 import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
 import { RoundControlService } from '../../services/round-control.service';
 import { LiveRoundService } from '../../services/live-round.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { SupabaseService } from '../../services/supabase.service';
 import type { CategoryWithCount } from '../../models/types';
+
+// Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
+// Verbindung mal hängt (z.B. Laptop kurz im Standby).
+const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-admin',
@@ -16,6 +21,7 @@ export class Admin {
   private readonly roundControl = inject(RoundControlService);
   private readonly liveRoundService = inject(LiveRoundService);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly supabase = inject(SupabaseService);
 
   // Läuft gerade eine Runden-Steuerungs-Aktion (Check-in/Voting), Buttons währenddessen sperren.
   protected readonly roundBusy = signal(false);
@@ -38,6 +44,24 @@ export class Admin {
     params: () => this.selectedCategoryId() ?? undefined,
     loader: ({ params }) => this.applicationService.getApplicationsForCategory(params),
   });
+
+  constructor() {
+    const channel = this.supabase.client
+      .channel('admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => this.categories.reload())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => {
+        this.categories.reload();
+        this.applicants.reload();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_round' }, () => this.liveRound.reload())
+      .subscribe();
+    const interval = setInterval(() => this.liveRound.reload(), FALLBACK_POLL_INTERVAL_MS);
+
+    inject(DestroyRef).onDestroy(() => {
+      clearInterval(interval);
+      void this.supabase.client.removeChannel(channel);
+    });
+  }
 
   protected async toggleOpen(category: CategoryWithCount): Promise<void> {
     this.error.set(null);

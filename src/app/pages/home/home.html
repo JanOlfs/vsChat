@@ -1,10 +1,17 @@
 <section>
-  <h1>Captnblacky gegen Chat</h1>
+  <h1>Captnblacky vs Chat</h1>
   <p>
-    In mehreren Kategorien tritt der Streamer gegen jeweils einen Zuschauer an. Bewirb dich hier auf
-    eine Kategorie, Check-in und Voting laufen später im Stream über den Twitch-Chat.
+    In mehreren Kategorien tritt Captnblacky gegen jeweils einen Zuschauer an. Bewirb dich unten auf eine Kategorie.
+    Wenn im Stream der Check-in für deine Kategorie öffnet, schreib <strong>!checkin</strong> in den Chat. Danach
+    stimmt der Chat mit <strong>!vote</strong> ab, wer gegen den Streamer spielen darf.
   </p>
 </section>
+
+@if (auth.isLoggedIn()) {
+  <section>
+    <app-my-applications />
+  </section>
+}
 
 <section>
   <h2>Kategorien</h2>

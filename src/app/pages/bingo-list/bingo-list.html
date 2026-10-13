@@ -20,12 +20,21 @@
         </button>
       </li>
     } @empty {
-      <li class="muted">Noch keine Spielfläche{{ auth.currentProfile()?.is_admin ? '' : ' für dich' }} angelegt.</li>
+      <li class="muted">
+        Noch keine Spielfläche{{ auth.currentProfile()?.is_admin ? '' : ' für dich' }} angelegt.
+      </li>
     }
   </ul>
 }
 
-@if (auth.currentProfile()?.is_admin) {
+@if (!manage() && auth.currentProfile()?.is_admin) {
+  <p class="muted">
+    Neue Spielfläche anlegen:
+    <a routerLink="/admin" [queryParams]="{ tab: 'bingo' }">Admin, Tab Bingo</a>
+  </p>
+}
+
+@if (manage() && auth.currentProfile()?.is_admin) {
   <h2>Neue Spielfläche</h2>
   <form class="admin-form" (submit)="createBoard($event, nameInput, opponentInput)">
     <label>

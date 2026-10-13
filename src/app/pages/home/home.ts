@@ -3,11 +3,14 @@ import { Router } from '@angular/router';
 import { CategoryService } from '../../services/category.service';
 import { MatchService } from '../../services/match.service';
 import { SupabaseService } from '../../services/supabase.service';
+import { AuthService } from '../../services/auth.service';
 import { CategoryDetail } from '../category-detail/category-detail';
+import { MyApplications } from '../my-applications/my-applications';
 
+/** Der "Captnblacky vs Chat"-Tab: Kategorien, eigene Bewerbungen, bisherige Gegner. */
 @Component({
   selector: 'app-home',
-  imports: [CategoryDetail],
+  imports: [CategoryDetail, MyApplications],
   templateUrl: './home.html',
 })
 export class Home {
@@ -15,6 +18,7 @@ export class Home {
   private readonly matchService = inject(MatchService);
   private readonly router = inject(Router);
   private readonly supabase = inject(SupabaseService);
+  protected readonly auth = inject(AuthService);
 
   // Bindet automatisch an ?kategorie=<slug> (withComponentInputBinding), damit
   // die aufgeklappte Kategorie eine URL hat: teilbar, und der Twitch-Login

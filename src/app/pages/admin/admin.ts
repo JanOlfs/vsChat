@@ -1,4 +1,7 @@
-import { Component, DestroyRef, inject, resource, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, input, resource, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { BingoList } from '../bingo-list/bingo-list';
+import { ImposterList } from '../imposter-list/imposter-list';
 import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
 import { RoundControlService } from '../../services/round-control.service';
@@ -14,9 +17,15 @@ const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-admin',
+  imports: [RouterLink, BingoList, ImposterList],
   templateUrl: './admin.html',
 })
 export class Admin {
+  // ?tab=bingo|imposter (withComponentInputBinding), ohne Parameter der vs-Chat-Tab.
+  // In der URL, damit ein Reload im selben Tab bleibt.
+  readonly tab = input<string>();
+  protected readonly activeTab = computed(() => this.tab() ?? 'vs-chat');
+
   private readonly categoryService = inject(CategoryService);
   private readonly applicationService = inject(ApplicationService);
   private readonly roundControl = inject(RoundControlService);

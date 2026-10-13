@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject, resource, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, booleanAttribute, inject, input, resource, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
@@ -11,6 +11,7 @@ const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-bingo-list',
+  imports: [RouterLink],
   templateUrl: './bingo-list.html',
 })
 export class BingoList {
@@ -18,6 +19,9 @@ export class BingoList {
   private readonly router = inject(Router);
   private readonly supabase = inject(SupabaseService);
   protected readonly auth = inject(AuthService);
+
+  // Im Admin-Tab eingebettet mit Anlege-Formular, im normalen Tab nur die Liste.
+  readonly manage = input(false, { transform: booleanAttribute });
 
   protected readonly error = signal<string | null>(null);
 

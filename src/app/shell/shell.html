@@ -1,11 +1,11 @@
 <header class="site-header">
   <a routerLink="/" class="brand">
     <img src="logo.jpg" alt="" />
-    Captnblacky gegen Chat
+    Captnblacky
   </a>
   <nav>
+    <a routerLink="/vs-chat">vs Chat</a>
     @if (auth.isLoggedIn()) {
-      <a routerLink="/meine-bewerbungen">Meine Bewerbungen</a>
       <a routerLink="/bingo">Bingo</a>
       <a routerLink="/imposter">Imposter</a>
       @if (auth.currentProfile()?.is_admin) {

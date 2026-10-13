@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, resource, signal } from '@angular/core';
+import { Component, DestroyRef, booleanAttribute, inject, input, resource, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ImposterService } from '../../services/imposter.service';
 import { AuthService } from '../../services/auth.service';
@@ -15,6 +15,9 @@ export class ImposterList {
   private readonly router = inject(Router);
   private readonly supabase = inject(SupabaseService);
   protected readonly auth = inject(AuthService);
+
+  // Im Admin-Tab eingebettet mit Anlege-Formular, im normalen Tab nur die Liste.
+  readonly manage = input(false, { transform: booleanAttribute });
 
   protected readonly gameDefs = Object.entries(IMPOSTER_GAMES);
   protected readonly error = signal<string | null>(null);

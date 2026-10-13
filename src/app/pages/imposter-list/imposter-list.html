@@ -1,7 +1,7 @@
 <h1>Imposter</h1>
 <p class="muted">
-  Jeder bekommt vor dem Match geheim eine Rolle. Der Imposter versucht, das Spiel unauffällig zu verlieren. Danach
-  wird abgestimmt und aufgelöst.
+  Jeder bekommt vor dem Match geheim eine Rolle. Der Imposter versucht, das Spiel unauffällig zu
+  verlieren. Danach wird abgestimmt und aufgelöst.
 </p>
 
 @if (error()) {
@@ -25,7 +25,14 @@
   </ul>
 }
 
-@if (auth.currentProfile()?.is_admin) {
+@if (!manage() && auth.currentProfile()?.is_admin) {
+  <p class="muted">
+    Neues Spiel anlegen:
+    <a routerLink="/admin" [queryParams]="{ tab: 'imposter' }">Admin, Tab Imposter</a>
+  </p>
+}
+
+@if (manage() && auth.currentProfile()?.is_admin) {
   <h2>Neues Spiel</h2>
   <form class="admin-form" (submit)="createGame($event, nameInput, gameSelect, paranoiaInput)">
     <label>
@@ -41,7 +48,10 @@
       </select>
     </label>
     <label>
-      <span><input type="checkbox" [checked]="paranoia()" (change)="paranoia.set(!paranoia())" /> Paranoia</span>
+      <span
+        ><input type="checkbox" [checked]="paranoia()" (change)="paranoia.set(!paranoia())" />
+        Paranoia</span
+      >
       <input
         #paranoiaInput
         type="number"

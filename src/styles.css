@@ -689,6 +689,68 @@ app-overlay .overlay-panel li.applicant.checked-in {
   text-shadow: 0 0 8px var(--red-glow);
 }
 
+/* Startseite: ein Kasten pro Modus. */
+.mode-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.mode-list a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.mode-list a:hover {
+  border-color: var(--red);
+}
+
+.mode-list strong {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: normal;
+  color: var(--red);
+}
+
+.mode-list span {
+  color: var(--text-muted);
+}
+
+/* Unter-Tabs im Admin-Bereich. */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.tabs a {
+  padding: 0.5rem 1rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tabs a:hover {
+  color: var(--text);
+}
+
+.tabs a.active {
+  color: var(--text);
+  border-bottom-color: var(--red);
+}
+
 /* Imposter: verdeckte Rollenkarte (Streamer-Bildschirm ist live) und Abstimmung. */
 .imposter-card {
   max-width: 28rem;

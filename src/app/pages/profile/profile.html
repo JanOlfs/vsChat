@@ -33,10 +33,17 @@
   }
 </ul>
 
-<form class="admin-form" (submit)="addAccount($event, nameInput)">
+<form class="admin-form" (submit)="addAccount($event, gameNameInput, tagLineInput)">
   <label>
-    Riot ID
-    <input #nameInput type="text" placeholder="Name#TAG" required />
+    Game Name
+    <input #gameNameInput type="text" placeholder="z.B. Captnblacky" required />
+  </label>
+  <label>
+    Tagline
+    <span class="tagline-field">
+      #
+      <input #tagLineInput type="text" placeholder="EUW" maxlength="5" required />
+    </span>
   </label>
   <button type="submit">Hinzufügen</button>
 </form>

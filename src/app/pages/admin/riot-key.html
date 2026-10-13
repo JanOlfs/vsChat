@@ -1,18 +1,15 @@
-<section class="admin-applicants">
+<section class="admin-applicants riot-key-box">
   <h2>Riot-API-Schlüssel</h2>
 
   @if (status.value(); as s) {
     @if (s.last_error) {
       <p role="alert">{{ s.last_error }} ({{ s.last_error_at | date: 'dd.MM. HH:mm' }})</p>
+    } @else if (s.last_ok_at) {
+      <p class="muted">Funktioniert, zuletzt geprüft um {{ s.last_ok_at | date: 'HH:mm' }}.</p>
+    } @else {
+      <p class="muted">Wird geprüft …</p>
     }
-    <p [class.muted]="!expired()" [class.imposter-role-bad]="expired()">
-      Gesetzt am {{ s.updated_at | date: 'dd.MM. HH:mm' }}.
-      @if (expired()) {
-        Ein Entwicklungsschlüssel wäre inzwischen abgelaufen.
-      } @else {
-        Ein Entwicklungsschlüssel läuft am {{ expiresAt() | date: 'dd.MM. HH:mm' }} ab.
-      }
-    </p>
+    <p class="muted">Eingetragen am {{ s.updated_at | date: 'dd.MM. HH:mm' }}.</p>
   } @else if (!status.isLoading()) {
     <p class="muted">Noch kein Schlüssel hinterlegt, die League-Erkennung ist aus.</p>
   }

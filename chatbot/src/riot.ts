@@ -29,7 +29,7 @@ let championCache: { loadedAt: number; byKey: Map<string, { name: string; image:
  * Gibt true zurück, solange eine Runde läuft, dann pollt der Aufrufer schneller.
  */
 export async function pollImposterLol(supabase: SupabaseClient): Promise<boolean> {
-  const { data: keyRow } = await supabase.from('riot_api_key').select('api_key, last_error').maybeSingle();
+  const { data: keyRow } = await supabase.from('riot_api_key').select('api_key').maybeSingle();
   const { data: games } = await supabase
     .from('imposter_games')
     .select('id, current_round')
@@ -42,9 +42,10 @@ export async function pollImposterLol(supabase: SupabaseClient): Promise<boolean
     // Billiger Aufruf bei jedem Durchlauf, damit das Admin-Panel vor dem Start
     // einer Runde verlässlich weiß, ob der Schlüssel noch gilt.
     await riotGet(`${PLATFORM_HOST}/lol/status/v4/platform-data`, keyRow.api_key);
-    if (keyRow.last_error) {
-      await supabase.from('riot_api_key').update({ last_error: null, last_error_at: null }).eq('id', 1);
-    }
+    await supabase
+      .from('riot_api_key')
+      .update({ last_ok_at: new Date().toISOString(), last_error: null, last_error_at: null })
+      .eq('id', 1);
     await resolvePendingAccounts(supabase, keyRow.api_key);
     for (const game of games ?? []) {
       await pollGame(supabase, keyRow.api_key, game.id, game.current_round);

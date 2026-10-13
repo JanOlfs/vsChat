@@ -36,19 +36,22 @@ export class Profile {
     });
   }
 
-  protected async addAccount(event: Event, nameEl: HTMLInputElement): Promise<void> {
+  protected async addAccount(event: Event, gameNameEl: HTMLInputElement, tagLineEl: HTMLInputElement): Promise<void> {
     event.preventDefault();
     this.error.set(null);
-    const name = nameEl.value.trim();
+    const gameName = gameNameEl.value.trim();
+    // Wer das "#" doch mit eintippt, bekommt es stillschweigend entfernt.
+    const tagLine = tagLineEl.value.trim().replace(/^#/, '');
     const profileId = this.auth.currentProfile()?.id;
     if (!profileId) return;
-    if (!/^.+#.+$/.test(name)) {
-      this.error.set('Bitte die komplette Riot ID mit Tag angeben, z.B. Captnblacky#EUW.');
+    if (!gameName || !tagLine || gameName.includes('#') || tagLine.includes('#')) {
+      this.error.set('Bitte Game Name und Tagline getrennt angeben, z.B. Captnblacky und EUW.');
       return;
     }
     try {
-      await this.gameAccounts.add(profileId, 'lol', name);
-      nameEl.value = '';
+      await this.gameAccounts.add(profileId, 'lol', `${gameName}#${tagLine}`);
+      gameNameEl.value = '';
+      tagLineEl.value = '';
       this.accounts.reload();
     } catch (err) {
       console.error(err);

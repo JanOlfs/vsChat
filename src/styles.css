@@ -851,6 +851,23 @@ app-overlay .overlay-panel li.applicant.checked-in {
   box-shadow: 0 0 8px var(--red-glow);
 }
 
+/* "#" vor dem Tagline-Feld auf der Profilseite. */
+.tagline-field {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text);
+}
+
+.tagline-field input {
+  width: 6rem;
+}
+
+/* Steht im Admin-Tab Imposter direkt unter dem Formular "Neues Spiel". */
+.riot-key-box {
+  margin-top: 2rem;
+}
+
 .mapping-box summary {
   cursor: pointer;
 }

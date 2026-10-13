@@ -1,9 +1,9 @@
-import { Component, computed, inject, resource, signal } from '@angular/core';
+import { Component, DestroyRef, inject, resource, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { GameAccountService } from '../../services/game-account.service';
 
-// Riots Entwicklungsschlüssel gilt 24 Stunden.
-const DEV_KEY_LIFETIME_MS = 24 * 60 * 60_000;
+// Der Worker prüft den Schlüssel bei jedem Durchlauf, hier nur gelegentlich nachladen.
+const STATUS_RELOAD_MS = 30_000;
 
 /** Riot-API-Schlüssel pflegen. Der Schlüssel selbst wird nie zurückgelesen, nur sein Status. */
 @Component({
@@ -19,15 +19,11 @@ export class RiotKey {
 
   protected readonly status = resource({ loader: () => this.gameAccounts.getRiotApiKeyStatus() });
 
-  protected readonly expiresAt = computed(() => {
-    const updatedAt = this.status.value()?.updated_at;
-    return updatedAt ? new Date(Date.parse(updatedAt) + DEV_KEY_LIFETIME_MS) : null;
-  });
-
-  protected readonly expired = computed(() => {
-    const expiresAt = this.expiresAt();
-    return !!expiresAt && expiresAt.getTime() < Date.now();
-  });
+  constructor() {
+    // Nach dem Speichern soll "wird geprüft" ohne Neuladen zu "funktioniert" werden.
+    const interval = setInterval(() => this.status.reload(), STATUS_RELOAD_MS);
+    inject(DestroyRef).onDestroy(() => clearInterval(interval));
+  }
 
   protected async save(event: Event, keyEl: HTMLInputElement): Promise<void> {
     event.preventDefault();

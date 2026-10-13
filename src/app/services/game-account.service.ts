@@ -67,7 +67,12 @@ export class GameAccountService {
     this.pokeWorker();
   }
 
-  async getRiotApiKeyStatus(): Promise<{ updated_at: string; last_error: string | null; last_error_at: string | null } | null> {
+  async getRiotApiKeyStatus(): Promise<{
+    updated_at: string;
+    last_ok_at: string | null;
+    last_error: string | null;
+    last_error_at: string | null;
+  } | null> {
     const { data, error } = await this.supabase.client.rpc('riot_api_key_status');
     if (error) {
       throw error;

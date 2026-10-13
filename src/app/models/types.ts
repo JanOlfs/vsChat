@@ -105,3 +105,57 @@ export interface BingoCellWithDetails extends BingoCell {
   category: BingoCategory | null;
   claimed_by_profile: Profile | null;
 }
+
+export type ImposterGameStatus = 'lobby' | 'playing' | 'voting' | 'revealed';
+export type ImposterResult = 'win' | 'loss';
+
+export interface ImposterGame {
+  id: string;
+  name: string;
+  game_key: string;
+  max_players: number;
+  paranoia_percent: number;
+  status: ImposterGameStatus;
+  current_round: number;
+  created_by: string;
+  created_at: string;
+}
+
+export interface ImposterPlayer {
+  game_id: string;
+  profile_id: string;
+  voted_round: number;
+  joined_at: string;
+  profile: Profile;
+}
+
+export interface ImposterRound {
+  game_id: string;
+  round: number;
+  result: ImposterResult | null;
+}
+
+/** Fremde Rollen kommen per RLS erst nach der Auflösung der Runde mit. */
+export interface ImposterRole {
+  game_id: string;
+  round: number;
+  profile_id: string;
+  role: string;
+  voted: boolean;
+  vote_for: string | null;
+}
+
+export interface ImposterChatVote {
+  game_id: string;
+  round: number;
+  twitch_user_id: string;
+  target_id: string;
+}
+
+export interface ImposterState {
+  game: ImposterGame;
+  players: ImposterPlayer[];
+  rounds: ImposterRound[];
+  roles: ImposterRole[];
+  chatVotes: ImposterChatVote[];
+}

@@ -263,6 +263,9 @@ export class ChatBotDo implements DurableObject {
       case 'botstatus':
         if (isMod) this.say(this.statusText());
         break;
+      case 'sus':
+        await this.imposterSus(twitchUserId, arg);
+        break;
     }
   }
 
@@ -395,6 +398,45 @@ export class ChatBotDo implements DurableObject {
     }
 
     await this.resetRound();
+  }
+
+  /**
+   * Chat tippt während einer laufenden Imposter-Runde, wer der Imposter ist.
+   * Kein eigener Zustand im DO, alles liegt in Supabase. Der letzte Tipp zählt.
+   * ponytail: laufen mehrere Imposter-Spiele gleichzeitig, zählt der Tipp in
+   * jedem, in dem der Name mitspielt.
+   */
+  private async imposterSus(twitchUserId: string, rawName: string): Promise<void> {
+    const name = rawName.toLowerCase().replace(/^@/, '');
+    if (!name) return;
+    const supabase = this.supabase();
+
+    // ilike für Groß-/Kleinschreibung, Wildcards im Namen escapen ("_" ist in Twitch-Logins erlaubt).
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('twitch_login', name.replace(/[\\%_]/g, '\\$&'))
+      .maybeSingle();
+    if (!profile) return;
+
+    const { data: games } = await supabase
+      .from('imposter_games')
+      .select('id, current_round')
+      .in('status', ['playing', 'voting']);
+    for (const game of games ?? []) {
+      const { data: role } = await supabase
+        .from('imposter_roles')
+        .select('profile_id')
+        .eq('game_id', game.id)
+        .eq('round', game.current_round)
+        .eq('profile_id', profile.id)
+        .maybeSingle();
+      if (!role) continue;
+      const { error } = await supabase
+        .from('imposter_chat_votes')
+        .upsert({ game_id: game.id, round: game.current_round, twitch_user_id: twitchUserId, target_id: profile.id });
+      if (error) console.error('imposter chat vote fehlgeschlagen', error);
+    }
   }
 
   private async resetRound(): Promise<void> {

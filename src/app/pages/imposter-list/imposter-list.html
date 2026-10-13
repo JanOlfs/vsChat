@@ -1,0 +1,57 @@
+<h1>Imposter</h1>
+<p class="muted">
+  Jeder bekommt vor dem Match geheim eine Rolle. Der Imposter versucht, das Spiel unauffällig zu verlieren. Danach
+  wird abgestimmt und aufgelöst.
+</p>
+
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (games.isLoading() && !games.hasValue()) {
+  <p>Lade Spiele …</p>
+} @else if (games.error()) {
+  <p role="alert">Spiele konnten nicht geladen werden.</p>
+} @else {
+  <ul class="simple-list">
+    @for (game of games.value(); track game.id) {
+      <li>
+        <span>{{ game.name }} ({{ gameName(game.game_key) }}), Runde {{ game.current_round }}</span>
+        <a [routerLink]="['/imposter', game.id]">Öffnen</a>
+      </li>
+    } @empty {
+      <li class="muted">Noch kein Spiel angelegt.</li>
+    }
+  </ul>
+}
+
+@if (auth.currentProfile()?.is_admin) {
+  <h2>Neues Spiel</h2>
+  <form class="admin-form" (submit)="createGame($event, nameInput, gameSelect, paranoiaInput)">
+    <label>
+      Name
+      <input #nameInput type="text" placeholder="z.B. Freitagabend" required />
+    </label>
+    <label>
+      Spiel
+      <select #gameSelect>
+        @for (def of gameDefs; track def[0]) {
+          <option [value]="def[0]">{{ def[1].name }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span><input type="checkbox" [checked]="paranoia()" (change)="paranoia.set(!paranoia())" /> Paranoia</span>
+      <input
+        #paranoiaInput
+        type="number"
+        min="0"
+        max="100"
+        value="20"
+        [disabled]="!paranoia()"
+        title="Chance in Prozent, dass eine Runde ganz ohne Imposter läuft"
+      />
+    </label>
+    <button type="submit">Anlegen</button>
+  </form>
+}

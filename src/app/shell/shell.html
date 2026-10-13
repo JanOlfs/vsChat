@@ -7,6 +7,7 @@
     @if (auth.isLoggedIn()) {
       <a routerLink="/meine-bewerbungen">Meine Bewerbungen</a>
       <a routerLink="/bingo">Bingo</a>
+      <a routerLink="/imposter">Imposter</a>
       @if (auth.currentProfile()?.is_admin) {
         <a routerLink="/admin">Admin</a>
       }

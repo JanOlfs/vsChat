@@ -1,0 +1,34 @@
+@if (state.value(); as s) {
+  <div class="overlay-panel">
+    <h2>Imposter · Runde {{ s.game.current_round }}</h2>
+
+    @if (s.game.status === 'playing' || s.game.status === 'voting') {
+      <p>Wer ist der Imposter? Tippt im Chat: <strong>!sus &lt;name&gt;</strong></p>
+    }
+
+    @if (summary(); as sum) {
+      <p class="bingo-winner">Imposter: {{ name(sum.imposterId) }}</p>
+      <ul>
+        @for (row of sum.rows; track row.profileId) {
+          <li>
+            <span>{{ name(row.profileId) }} ({{ roleName(row.role) }})</span>
+            <span class="votes">+{{ row.points }}</span>
+          </li>
+        }
+      </ul>
+      @if (sum.chatTotal > 0) {
+        <p class="muted">Chat: {{ sum.chat.get(sum.imposterId ?? '') ?? 0 }} von {{ sum.chatTotal }} lagen richtig</p>
+      }
+    }
+
+    <h2>Punkte</h2>
+    <ul>
+      @for (entry of scoreboard(); track entry.profileId) {
+        <li>
+          <span>{{ entry.name }}</span>
+          <span class="votes">{{ entry.points }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+}

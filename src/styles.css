@@ -455,7 +455,8 @@ main {
    overlay.ts/bingo-overlay.ts), Panel im Kanal-Look. Ungescoped (nicht an
    app-overlay gebunden), damit app-bingo-overlay dasselbe Panel nutzen kann. */
 app-overlay,
-app-bingo-overlay {
+app-bingo-overlay,
+app-imposter-overlay {
   display: block;
 }
 
@@ -686,6 +687,47 @@ app-overlay .overlay-panel li.applicant.checked-in {
   text-transform: uppercase;
   color: var(--red);
   text-shadow: 0 0 8px var(--red-glow);
+}
+
+/* Imposter: verdeckte Rollenkarte (Streamer-Bildschirm ist live) und Abstimmung. */
+.imposter-card {
+  max-width: 28rem;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.imposter-card-hidden {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-elevated),
+    var(--bg-elevated) 10px,
+    var(--bg-elevated-2) 10px,
+    var(--bg-elevated-2) 20px
+  );
+}
+
+.imposter-card h2 {
+  margin-top: 0;
+}
+
+.imposter-role-bad {
+  color: var(--red);
+}
+
+.imposter-vote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.imposter-vote button.selected {
+  border-color: var(--red);
+  box-shadow: 0 0 8px var(--red-glow);
 }
 
 /* Klein und dezent, nur zum Prüfen ob ein Deploy schon live ist. */

@@ -1,0 +1,140 @@
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+@if (state.value(); as s) {
+  <h1>{{ s.game.name }}</h1>
+  <p class="muted">
+    {{ gameDef()?.name ?? s.game.game_key }} · Runde {{ s.game.current_round }}
+    @if (s.game.paranoia_percent > 0) {
+      · Paranoia {{ s.game.paranoia_percent }} %
+    }
+  </p>
+
+  @switch (s.game.status) {
+    @case ('lobby') {
+      <p>Lobby: Warte auf Spieler ({{ s.players.length }}/{{ s.game.max_players }}).</p>
+    }
+    @case ('playing') {
+      <p>Match läuft. Viel Glück, und trau niemandem.</p>
+    }
+    @case ('voting') {
+      <p>Abstimmung: Wer war der Imposter? ({{ votedCount() }}/{{ s.players.length }} abgestimmt)</p>
+    }
+  }
+
+  @if (myRole(); as role) {
+    <div class="imposter-card" [class.imposter-card-hidden]="!showRole()" (click)="showRole.set(!showRole())">
+      @if (showRole()) {
+        <h2 [class.imposter-role-bad]="role.role === 'imposter'">{{ roleName(role.role) }}</h2>
+        <p>{{ gameDef()?.roles?.[role.role]?.description }}</p>
+        <p class="muted">Antippen zum Verdecken</p>
+      } @else {
+        <h2>Deine Rolle</h2>
+        <p class="muted">Antippen zum Aufdecken (Achtung, Stream!)</p>
+      }
+    </div>
+  }
+
+  @if (s.game.status === 'voting' && myRole(); as role) {
+    <h2>Deine Stimme</h2>
+    <div class="imposter-vote">
+      @for (p of s.players; track p.profile_id) {
+        @if (p.profile_id !== role.profile_id) {
+          <button
+            type="button"
+            [class.selected]="role.voted && role.vote_for === p.profile_id"
+            (click)="vote(p.profile_id)"
+          >
+            {{ p.profile.display_name }}
+          </button>
+        }
+      }
+      @if (s.game.paranoia_percent > 0) {
+        <button type="button" [class.selected]="role.voted && role.vote_for === null" (click)="vote(null)">
+          Kein Imposter
+        </button>
+      }
+    </div>
+  }
+
+  @if (summary(); as sum) {
+    <h2>Auflösung Runde {{ s.game.current_round }}</h2>
+    <p>
+      {{ sum.result === 'win' ? 'Sieg' : sum.result === 'loss' ? 'Niederlage' : 'Kein Ergebnis eingetragen' }} ·
+      Imposter: <strong>{{ name(sum.imposterId) }}</strong>
+    </p>
+    <table class="admin-table">
+      <thead>
+        <tr><th>Spieler</th><th>Rolle</th><th>Tipp</th><th>Punkte</th></tr>
+      </thead>
+      <tbody>
+        @for (row of sum.rows; track row.profileId) {
+          <tr>
+            <td>{{ name(row.profileId) }}</td>
+            <td [class.imposter-role-bad]="row.role === 'imposter'">{{ roleName(row.role) }}</td>
+            <td>{{ row.voted ? name(row.voteFor) : '-' }}</td>
+            <td>+{{ row.points }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (sum.chatTotal > 0) {
+      <p class="muted">
+        Chat ({{ sum.chatTotal }} Tipps): {{ sum.chat.get(sum.imposterId ?? '') ?? 0 }} lagen richtig.
+      </p>
+    }
+  }
+
+  <h2>Spieler</h2>
+  <ul class="simple-list">
+    @for (entry of scoreboard(); track entry.player.profile_id) {
+      <li>
+        <span>
+          {{ entry.player.profile.display_name }}
+          @if (s.game.status === 'voting' && entry.player.voted_round === s.game.current_round) {
+            <span class="muted">(abgestimmt)</span>
+          }
+        </span>
+        <span>
+          {{ entry.points }} Punkte
+          @if (auth.currentProfile()?.is_admin && (s.game.status === 'lobby' || s.game.status === 'revealed')) {
+            <button type="button" (click)="kick(entry.player.profile_id)">Entfernen</button>
+          }
+        </span>
+      </li>
+    } @empty {
+      <li class="muted">Noch niemand beigetreten.</li>
+    }
+  </ul>
+
+  @if (s.game.status === 'lobby' || s.game.status === 'revealed') {
+    @if (isPlayer()) {
+      <button type="button" (click)="leave()">Spiel verlassen</button>
+    } @else if (s.players.length < s.game.max_players) {
+      <button type="button" (click)="join()">Mitspielen</button>
+    }
+  }
+
+  @if (auth.currentProfile()?.is_admin) {
+    <div class="bingo-admin-controls">
+      @switch (s.game.status) {
+        @case ('playing') {
+          <span>Match vorbei:</span>
+          <button type="button" (click)="finishMatch('win')">Sieg</button>
+          <button type="button" (click)="finishMatch('loss')">Niederlage</button>
+        }
+        @case ('voting') {
+          <button type="button" (click)="reveal()">Auflösen</button>
+        }
+        @default {
+          <button type="button" (click)="assignRoles()">
+            {{ s.game.current_round === 0 ? 'Rollen verteilen' : 'Nächste Runde' }}
+          </button>
+        }
+      }
+      <button type="button" (click)="deleteGame()">Spiel löschen</button>
+      <span class="muted">OBS-Overlay: /imposter/{{ s.game.id }}/overlay</span>
+    </div>
+  }
+}

@@ -10,6 +10,7 @@
         type="button"
         class="riot-player"
         [class.riot-player-known]="p.profile_id"
+        [class.riot-player-me]="p.profile_id && p.profile_id === me()"
         [class.riot-player-votable]="isVotable(p)"
         [class.riot-player-selected]="p.profile_id && p.profile_id === selected()"
         [disabled]="!isVotable(p)"

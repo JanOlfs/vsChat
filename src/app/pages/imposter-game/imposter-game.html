@@ -35,6 +35,7 @@
       [participants]="participants"
       [votable]="votableIds()"
       [selected]="mySelection()"
+      [me]="auth.currentProfile()?.id ?? null"
       (pick)="vote($event)"
     />
 

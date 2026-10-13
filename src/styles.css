@@ -935,13 +935,18 @@ app-overlay .overlay-panel li.applicant.checked-in {
 }
 
 .riot-player-votable img {
-  border-color: var(--blue);
+  border-color: var(--text);
 }
 
 .riot-player-votable:hover img,
 .riot-player-votable:focus-visible img {
   transform: scale(1.15);
-  box-shadow: 0 0 12px rgba(63, 169, 245, 0.5);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+/* Die eigene Kachel, damit man sich unter den 10 schnell findet. */
+.riot-player-me img {
+  border-color: var(--blue);
 }
 
 .riot-player-selected img,

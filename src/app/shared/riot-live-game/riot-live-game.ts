@@ -16,6 +16,8 @@ export class RiotLiveGame {
   readonly votable = input<string[]>([]);
   /** Aktuell gewählte profile_id, wird hervorgehoben. */
   readonly selected = input<string | null>(null);
+  /** Eigene profile_id, die Kachel bekommt einen blauen Rahmen. Im Overlay leer. */
+  readonly me = input<string | null>(null);
   readonly pick = output<string>();
 
   protected readonly teams = computed(() => {

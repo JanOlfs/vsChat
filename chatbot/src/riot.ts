@@ -15,6 +15,7 @@ interface StoredParticipant {
   team_id: number;
   champion_name: string;
   champion_image: string | null;
+  champion_id?: number; // für den Stats-Abgleich, wenn Riot keine PUUID liefert
   profile_id: string | null;
   twitch_name: string | null;
   // Erst nach Spielende aus Match-V5 ergänzt.
@@ -188,6 +189,7 @@ async function findLiveGame(
         riot_id: p.riotId ?? '',
         team_id: p.teamId,
         champion_name: champion?.name ?? 'Unbekannt',
+        champion_id: p.championId,
         champion_image: champion?.image ?? null,
         profile_id: (p.puuid && profileByPuuid.get(p.puuid)) || null,
         twitch_name: (p.puuid && nameByPuuid.get(p.puuid)) || null,
@@ -205,7 +207,15 @@ async function findLiveGame(
 interface MatchDto {
   info: {
     teams: { teamId: number; win: boolean }[];
-    participants: { puuid: string; kills: number; deaths: number; assists: number; win: boolean }[];
+    participants: {
+      puuid: string;
+      teamId: number;
+      championId: number;
+      kills: number;
+      deaths: number;
+      assists: number;
+      win: boolean;
+    }[];
   };
 }
 
@@ -239,8 +249,10 @@ async function fetchResult(
     .eq('round', round)
     .maybeSingle();
   const statsByPuuid = new Map(match.info.participants.map((p) => [p.puuid, p]));
+  // Ersatz, falls die Spectator-API für einen Spieler keine PUUID geliefert hat: Team + Champion ist pro Spiel eindeutig.
+  const statsByTeamChampion = new Map(match.info.participants.map((p) => [`${p.teamId}:${p.championId}`, p]));
   const withStats = ((fresh?.riot_participants ?? participants) as StoredParticipant[]).map((p) => {
-    const stats = statsByPuuid.get(p.puuid);
+    const stats = statsByPuuid.get(p.puuid) ?? statsByTeamChampion.get(`${p.team_id}:${p.champion_id}`);
     return stats ? { ...p, kills: stats.kills, deaths: stats.deaths, assists: stats.assists, win: stats.win } : p;
   });
 

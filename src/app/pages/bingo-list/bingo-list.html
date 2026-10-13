@@ -28,11 +28,9 @@
 }
 
 @if (!manage() && auth.currentProfile()?.is_admin) {
-  <p class="muted">
-    Neue Spielfläche anlegen:
-    <a routerLink="/admin" [queryParams]="{ tab: 'bingo' }">Admin, Tab Bingo</a>
-  </p>
+  <p><a routerLink="/admin" [queryParams]="{ tab: 'bingo' }">Neues Spiel anlegen ↗</a></p>
 }
+
 
 @if (manage() && auth.currentProfile()?.is_admin) {
   <h2>Neue Spielfläche</h2>

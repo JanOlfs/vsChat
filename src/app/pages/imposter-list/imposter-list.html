@@ -26,10 +26,7 @@
 }
 
 @if (!manage() && auth.currentProfile()?.is_admin) {
-  <p class="muted">
-    Neues Spiel anlegen:
-    <a routerLink="/admin" [queryParams]="{ tab: 'imposter' }">Admin, Tab Imposter</a>
-  </p>
+  <p><a routerLink="/admin" [queryParams]="{ tab: 'imposter' }">Neues Spiel anlegen ↗</a></p>
 }
 
 @if (manage() && auth.currentProfile()?.is_admin) {

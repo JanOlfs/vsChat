@@ -1,5 +1,5 @@
 import { Component, DestroyRef, effect, inject, input, resource, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
@@ -19,7 +19,7 @@ interface DragPayload {
 
 @Component({
   selector: 'app-bingo-arrange',
-  imports: [AutoFitTextDirective],
+  imports: [AutoFitTextDirective, RouterLink],
   templateUrl: './bingo-arrange.html',
 })
 export class BingoArrange {

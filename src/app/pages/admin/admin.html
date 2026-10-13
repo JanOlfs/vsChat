@@ -86,7 +86,7 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Slug</th>
+            <th>Kürzel</th>
             <th>Bewerbungen</th>
             <th>Status</th>
             <th>Banner</th>
@@ -155,12 +155,12 @@
             "
           >
             <label>
-              Slug
-              <input #editSlugInput type="text" [value]="category.slug" required />
-            </label>
-            <label>
               Name
               <input #editNameInput type="text" [value]="category.name" required />
+            </label>
+            <label title="Kurz und ohne Leerzeichen, steht im Link und in !opencheckin">
+              Kürzel
+              <input #editSlugInput type="text" [value]="category.slug" required />
             </label>
             <label>
               Beschreibung (optional)
@@ -294,12 +294,12 @@
       (submit)="createCategory($event, slugInput, nameInput, descriptionInput, bannerInput)"
     >
       <label>
-        Slug
-        <input #slugInput type="text" required />
-      </label>
-      <label>
         Name
         <input #nameInput type="text" required />
+      </label>
+      <label title="Kurz und ohne Leerzeichen, steht im Link und in !opencheckin">
+        Kürzel
+        <input #slugInput type="text" placeholder="z.B. tft" required />
       </label>
       <label>
         Beschreibung (optional)

@@ -1,5 +1,5 @@
 import { Component, DestroyRef, computed, effect, inject, input, resource, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ImposterService } from '../../services/imposter.service';
 import { AuthService } from '../../services/auth.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
@@ -12,6 +12,7 @@ const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-imposter-game',
+  imports: [RouterLink],
   templateUrl: './imposter-game.html',
 })
 export class ImposterGame {

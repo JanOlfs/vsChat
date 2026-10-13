@@ -1,5 +1,5 @@
 import { Component, DestroyRef, effect, inject, input, resource, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BingoService } from '../../services/bingo.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
@@ -13,7 +13,7 @@ const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-bingo-play',
-  imports: [AutoFitTextDirective],
+  imports: [AutoFitTextDirective, RouterLink],
   templateUrl: './bingo-play.html',
 })
 export class BingoPlay {

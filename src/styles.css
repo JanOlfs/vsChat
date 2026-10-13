@@ -774,6 +774,17 @@ app-overlay .overlay-panel li.applicant.checked-in {
   color: var(--text-muted);
 }
 
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
 /* Unter-Tabs im Admin-Bereich. */
 .tabs {
   display: flex;

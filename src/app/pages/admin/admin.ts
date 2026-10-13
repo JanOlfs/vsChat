@@ -170,7 +170,7 @@ export class Admin {
     const slug = slugEl.value.trim();
     const name = nameEl.value.trim();
     if (!slug || !name) {
-      this.error.set('Slug und Name sind Pflichtfelder.');
+      this.error.set('Name und Kürzel sind Pflichtfelder.');
       return;
     }
 
@@ -191,7 +191,7 @@ export class Admin {
       this.editingCategory.set(null);
       this.categories.reload();
     } catch {
-      this.error.set('Kategorie konnte nicht gespeichert werden, ist der Slug schon vergeben?');
+      this.error.set('Kategorie konnte nicht gespeichert werden, ist das Kürzel schon vergeben?');
     }
   }
 
@@ -262,7 +262,7 @@ export class Admin {
     const slug = slugEl.value.trim();
     const name = nameEl.value.trim();
     if (!slug || !name) {
-      this.error.set('Slug und Name sind Pflichtfelder.');
+      this.error.set('Name und Kürzel sind Pflichtfelder.');
       return;
     }
 
@@ -285,7 +285,7 @@ export class Admin {
       bannerEl.value = '';
       this.categories.reload();
     } catch {
-      this.error.set('Kategorie konnte nicht angelegt werden, ist der Slug schon vergeben?');
+      this.error.set('Kategorie konnte nicht angelegt werden, ist das Kürzel schon vergeben?');
     }
   }
 

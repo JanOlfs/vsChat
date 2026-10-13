@@ -31,7 +31,12 @@
   }
 
   @if (liveParticipants(); as participants) {
-    <app-riot-live-game [participants]="participants" />
+    <app-riot-live-game
+      [participants]="participants"
+      [votable]="votableIds()"
+      [selected]="mySelection()"
+      (pick)="vote($event)"
+    />
 
     @if (auth.currentProfile()?.is_admin && s.game.status !== 'revealed') {
       <!-- Zugeklappt, solange alles passt, klappt von selbst auf, sobald eine Zuordnung fehlt. -->
@@ -102,15 +107,27 @@
         Die Abstimmung startet, sobald der Admin alle Spieler ihrem Ingame-Spieler zugeordnet hat.
       </p>
     } @else {
+      @if (liveParticipants()) {
+        <p class="muted">
+          Klick oben auf den Mitspieler aus deinem Team, den du für den Imposter hältst.
+          @if (role.voted) {
+            Aktuell gewählt: <strong>{{ name(role.vote_for) }}</strong
+            >.
+          }
+        </p>
+      }
       <div class="imposter-vote">
-        @for (p of voteTargets(); track p.profile_id) {
-          <button
-            type="button"
-            [class.selected]="role.voted && role.vote_for === p.profile_id"
-            (click)="vote(p.profile_id)"
-          >
-            {{ p.profile.display_name }}
-          </button>
+        <!-- Mit erkanntem League-Spiel wird über die Champion-Kacheln abgestimmt. -->
+        @if (!liveParticipants()) {
+          @for (p of voteTargets(); track p.profile_id) {
+            <button
+              type="button"
+              [class.selected]="role.voted && role.vote_for === p.profile_id"
+              (click)="vote(p.profile_id)"
+            >
+              {{ p.profile.display_name }}
+            </button>
+          }
         }
         @if (s.game.paranoia_percent > 0) {
           <button

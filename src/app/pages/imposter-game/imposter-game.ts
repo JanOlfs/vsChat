@@ -118,6 +118,18 @@ export class ImposterGame {
     return others.filter((p) => teamOf(p.profile_id) === teamOf(me));
   });
 
+  /** Anklickbare Kacheln im Live-Spiel: nur während der Abstimmung, nur Mitspieler, nur wenn alle zugeordnet sind. */
+  protected readonly votableIds = computed(() =>
+    this.state.value()?.game.status === 'voting' && this.myRole() && this.unmappedPlayers().length === 0
+      ? this.voteTargets().map((p) => p.profile_id)
+      : [],
+  );
+
+  protected readonly mySelection = computed(() => {
+    const role = this.myRole();
+    return role?.voted ? role.vote_for : null;
+  });
+
   protected readonly votedCount = computed(() => {
     const s = this.state.value();
     return s ? s.players.filter((p) => p.voted_round === s.game.current_round).length : 0;

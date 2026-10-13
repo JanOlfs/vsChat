@@ -147,6 +147,11 @@ export interface RiotParticipant {
   champion_image: string | null;
   profile_id: string | null;
   twitch_name: string | null;
+  // Erst nach Spielende gesetzt (Match-V5).
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  win?: boolean;
 }
 
 export type GameAccountStatus = 'pending' | 'ok' | 'not_found';

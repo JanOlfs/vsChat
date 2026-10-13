@@ -17,6 +17,11 @@ interface StoredParticipant {
   champion_image: string | null;
   profile_id: string | null;
   twitch_name: string | null;
+  // Erst nach Spielende aus Match-V5 ergänzt.
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  win?: boolean;
 }
 
 class RiotKeyError extends Error {}
@@ -32,8 +37,9 @@ export async function pollImposterLol(supabase: SupabaseClient): Promise<boolean
   const { data: keyRow } = await supabase.from('riot_api_key').select('api_key').maybeSingle();
   const { data: games } = await supabase
     .from('imposter_games')
-    .select('id, current_round')
-    .eq('status', 'playing')
+    .select('id, current_round, status')
+    // voting auch, falls der Admin das Ergebnis schneller eingetragen hat als Riot die Stats liefert.
+    .in('status', ['playing', 'voting'])
     .eq('game_key', 'lol');
   const playing = (games ?? []).length > 0;
   if (!keyRow) return playing;
@@ -48,7 +54,7 @@ export async function pollImposterLol(supabase: SupabaseClient): Promise<boolean
       .eq('id', 1);
     await resolvePendingAccounts(supabase, keyRow.api_key);
     for (const game of games ?? []) {
-      await pollGame(supabase, keyRow.api_key, game.id, game.current_round);
+      await pollGame(supabase, keyRow.api_key, game.id, game.current_round, game.status);
     }
   } catch (err) {
     if (!(err instanceof RiotKeyError)) throw err;
@@ -98,7 +104,13 @@ async function resolvePendingAccounts(supabase: SupabaseClient, apiKey: string):
   }
 }
 
-async function pollGame(supabase: SupabaseClient, apiKey: string, gameId: string, round: number): Promise<void> {
+async function pollGame(
+  supabase: SupabaseClient,
+  apiKey: string,
+  gameId: string,
+  round: number,
+  status: string,
+): Promise<void> {
   const { data: roundRow } = await supabase
     .from('imposter_rounds')
     .select('started_at, riot_match_id, riot_participants')
@@ -106,6 +118,9 @@ async function pollGame(supabase: SupabaseClient, apiKey: string, gameId: string
     .eq('round', round)
     .maybeSingle();
   if (!roundRow) return;
+  // In der Abstimmung nur noch fehlende Stats nachholen, kein neues Spiel mehr suchen.
+  const hasStats = ((roundRow.riot_participants ?? []) as StoredParticipant[]).some((p) => p.kills !== undefined);
+  if (status === 'voting' && (!roundRow.riot_match_id || hasStats)) return;
 
   const { data: roles } = await supabase
     .from('imposter_roles')
@@ -188,7 +203,10 @@ async function findLiveGame(
 }
 
 interface MatchDto {
-  info: { teams: { teamId: number; win: boolean }[] };
+  info: {
+    teams: { teamId: number; win: boolean }[];
+    participants: { puuid: string; kills: number; deaths: number; assists: number; win: boolean }[];
+  };
 }
 
 async function fetchResult(
@@ -213,9 +231,22 @@ async function fetchResult(
   const won = match.info.teams.find((t) => t.teamId === ourTeam)?.win;
   if (won === undefined) return;
 
+  // Frisch lesen, damit eine gerade gemachte Hand-Zuordnung des Admins nicht überschrieben wird.
+  const { data: fresh } = await supabase
+    .from('imposter_rounds')
+    .select('riot_participants')
+    .eq('game_id', gameId)
+    .eq('round', round)
+    .maybeSingle();
+  const statsByPuuid = new Map(match.info.participants.map((p) => [p.puuid, p]));
+  const withStats = ((fresh?.riot_participants ?? participants) as StoredParticipant[]).map((p) => {
+    const stats = statsByPuuid.get(p.puuid);
+    return stats ? { ...p, kills: stats.kills, deaths: stats.deaths, assists: stats.assists, win: stats.win } : p;
+  });
+
   await supabase
     .from('imposter_rounds')
-    .update({ result: won ? 'win' : 'loss' })
+    .update({ result: won ? 'win' : 'loss', riot_participants: withStats })
     .eq('game_id', gameId)
     .eq('round', round);
   // Nur wenn der Admin nicht schon selbst weitergeschaltet hat.

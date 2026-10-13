@@ -11,7 +11,7 @@
       @if (auth.currentProfile()?.is_admin) {
         <a routerLink="/admin" routerLinkActive="active">Admin</a>
       }
-      <span class="user">{{ auth.currentProfile()?.display_name }}</span>
+      <a routerLink="/profil" routerLinkActive="active" class="user">{{ auth.currentProfile()?.display_name }}</a>
       <button type="button" (click)="logout()">Logout</button>
     } @else {
       <button type="button" (click)="login()">Login mit Twitch</button>

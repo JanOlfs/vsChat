@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Shell } from './shell/shell';
 import { Start } from './pages/start/start';
 import { Home } from './pages/home/home';
+import { Profile } from './pages/profile/profile';
 import { AuthCallback } from './pages/auth-callback/auth-callback';
 import { Overlay } from './pages/overlay/overlay';
 import { Admin } from './pages/admin/admin';
@@ -25,6 +26,7 @@ export const routes: Routes = [
       // Alte Adresse, "Meine Bewerbungen" ist jetzt Teil des vs-Chat-Tabs.
       { path: 'meine-bewerbungen', redirectTo: 'vs-chat' },
       { path: 'auth/callback', component: AuthCallback },
+      { path: 'profil', component: Profile, canActivate: [authGuard] },
       { path: 'admin', component: Admin, canActivate: [adminGuard] },
       { path: 'bingo', component: BingoList, canActivate: [authGuard] },
       { path: 'bingo/:id/arrange', component: BingoArrange, canActivate: [authGuard] },

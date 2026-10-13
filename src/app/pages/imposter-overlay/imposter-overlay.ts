@@ -1,6 +1,7 @@
 import { Component, DestroyRef, computed, effect, inject, input, resource } from '@angular/core';
 import { ImposterService } from '../../services/imposter.service';
 import { IMPOSTER_GAMES, currentRoundSummary, totalPoints } from '../../utils/imposter';
+import { RiotLiveGame } from '../../shared/riot-live-game/riot-live-game';
 
 // Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
 // Verbindung mal hängt (z.B. der Rechner mit OBS kurz im Standby).
@@ -9,6 +10,7 @@ const FALLBACK_POLL_INTERVAL_MS = 30000;
 /** Browser-Source für OBS, analog zu bingo-overlay.ts. Zeigt Rollen erst nach der Auflösung (RLS). */
 @Component({
   selector: 'app-imposter-overlay',
+  imports: [RiotLiveGame],
   templateUrl: './imposter-overlay.html',
 })
 export class ImposterOverlay {
@@ -24,6 +26,12 @@ export class ImposterOverlay {
   protected readonly summary = computed(() => {
     const s = this.state.value();
     return s ? currentRoundSummary(s) : null;
+  });
+
+  protected readonly liveParticipants = computed(() => {
+    const s = this.state.value();
+    if (!s || s.game.status === 'lobby') return null;
+    return s.rounds.find((r) => r.round === s.game.current_round)?.riot_participants ?? null;
   });
 
   protected readonly scoreboard = computed(() => {

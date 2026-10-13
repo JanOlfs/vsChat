@@ -851,6 +851,71 @@ app-overlay .overlay-panel li.applicant.checked-in {
   box-shadow: 0 0 8px var(--red-glow);
 }
 
+.mapping-box summary {
+  cursor: pointer;
+}
+
+.mapping-box[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+/* Live-League-Spiel (Imposter-Seite und Overlay): blaues Team oben, rotes unten. */
+.riot-team {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-width: 40rem;
+  padding: 0.5rem 0;
+  border-left: 3px solid var(--blue);
+  padding-left: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.riot-team-red {
+  border-left-color: var(--red);
+}
+
+.riot-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.riot-player img,
+.riot-player-placeholder {
+  width: 100%;
+  max-width: 4.5rem;
+  aspect-ratio: 1;
+  border-radius: 0.35rem;
+  border: 2px solid transparent;
+  background: var(--bg-elevated-2);
+}
+
+.riot-player-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+/* Spieler mit hinterlegtem Konto hervorheben. */
+.riot-player-known img {
+  border-color: var(--text);
+}
+
+.riot-player-name {
+  margin-top: 0.25rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.riot-player-twitch {
+  color: var(--text-muted);
+}
+
 /* Klein und dezent, nur zum Prüfen ob ein Deploy schon live ist. */
 .version-badge {
   position: fixed;

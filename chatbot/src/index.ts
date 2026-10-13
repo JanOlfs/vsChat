@@ -50,6 +50,15 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
+    // Stößt nur den nächsten Riot-Abgleich an (im DO gedrosselt), braucht keine Auth.
+    if (url.pathname === '/poke') {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: corsHeaders(env) });
+      }
+      const response = await stub(env).fetch(request);
+      return new Response(response.body, { status: response.status, headers: corsHeaders(env) });
+    }
+
     if (!ADMIN_ROUTES.has(url.pathname)) {
       // Cron-Keepalive-Ping o.ä., kein Kommando, keine CORS/Auth nötig.
       return stub(env).fetch(request);

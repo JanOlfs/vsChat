@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import type { ImposterGame, ImposterGameStatus, ImposterResult, ImposterState } from '../models/types';
+import type { ImposterGame, ImposterGameStatus, ImposterResult, ImposterState, RiotParticipant } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
 export class ImposterService {
@@ -111,6 +111,18 @@ export class ImposterService {
     const { error } = await this.supabase.client
       .from('imposter_rounds')
       .update({ result })
+      .eq('game_id', gameId)
+      .eq('round', round);
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** Admin: speichert die (per Hand korrigierte) Zuordnung Ingame-Spieler zu Profil. */
+  async setParticipants(gameId: string, round: number, participants: RiotParticipant[]): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('imposter_rounds')
+      .update({ riot_participants: participants })
       .eq('game_id', gameId)
       .eq('round', round);
     if (error) {

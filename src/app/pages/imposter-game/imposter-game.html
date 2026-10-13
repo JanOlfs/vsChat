@@ -19,14 +19,71 @@
     }
     @case ('playing') {
       <p>Match läuft. Viel Glück, und trau niemandem.</p>
+      @if (s.game.game_key === 'lol' && !liveParticipants()) {
+        <p class="muted">Das League-Spiel wird automatisch erkannt, sobald es lädt.</p>
+      }
     }
     @case ('voting') {
-      <p>Abstimmung: Wer war der Imposter? ({{ votedCount() }}/{{ s.players.length }} abgestimmt)</p>
+      <p>
+        Abstimmung: Wer war der Imposter? ({{ votedCount() }}/{{ s.players.length }} abgestimmt)
+      </p>
+    }
+  }
+
+  @if (liveParticipants(); as participants) {
+    <app-riot-live-game [participants]="participants" />
+
+    @if (auth.currentProfile()?.is_admin && s.game.status !== 'revealed') {
+      <!-- Zugeklappt, solange alles passt, klappt von selbst auf, sobald eine Zuordnung fehlt. -->
+      <details class="admin-applicants mapping-box" [open]="unmappedPlayers().length > 0">
+        <summary>
+          Zuordnung zu Ingame-Spielern:
+          @if (unmappedPlayers().length > 0) {
+            <span class="imposter-role-bad"
+              >es fehlt {{ unmappedNames() }}, erst danach kann abgestimmt werden</span
+            >
+          } @else {
+            <span class="muted">alle zugeordnet</span>
+          }
+        </summary>
+        <table class="admin-table">
+          <tbody>
+            @for (p of s.players; track p.profile_id) {
+              <tr>
+                <td>{{ p.profile.display_name }}</td>
+                <td>
+                  <select
+                    #participantSelect
+                    (change)="assignParticipant(p.profile_id, participantSelect.value)"
+                  >
+                    <option value="" [selected]="participantIndex(p.profile_id) === -1">
+                      nicht zugeordnet
+                    </option>
+                    @for (part of participants; track $index) {
+                      <option
+                        [value]="$index"
+                        [selected]="participantIndex(p.profile_id) === $index"
+                      >
+                        {{ part.team_id === 100 ? 'Blau' : 'Rot' }}:
+                        {{ part.riot_id.split('#')[0] }} ({{ part.champion_name }})
+                      </option>
+                    }
+                  </select>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </details>
     }
   }
 
   @if (myRole(); as role) {
-    <div class="imposter-card" [class.imposter-card-hidden]="!showRole()" (click)="showRole.set(!showRole())">
+    <div
+      class="imposter-card"
+      [class.imposter-card-hidden]="!showRole()"
+      (click)="showRole.set(!showRole())"
+    >
       @if (showRole()) {
         <h2 [class.imposter-role-bad]="role.role === 'imposter'">{{ roleName(role.role) }}</h2>
         <p>{{ gameDef()?.roles?.[role.role]?.description }}</p>
@@ -40,9 +97,13 @@
 
   @if (s.game.status === 'voting' && myRole(); as role) {
     <h2>Deine Stimme</h2>
-    <div class="imposter-vote">
-      @for (p of s.players; track p.profile_id) {
-        @if (p.profile_id !== role.profile_id) {
+    @if (unmappedPlayers().length > 0) {
+      <p class="muted">
+        Die Abstimmung startet, sobald der Admin alle Spieler ihrem Ingame-Spieler zugeordnet hat.
+      </p>
+    } @else {
+      <div class="imposter-vote">
+        @for (p of voteTargets(); track p.profile_id) {
           <button
             type="button"
             [class.selected]="role.voted && role.vote_for === p.profile_id"
@@ -51,24 +112,39 @@
             {{ p.profile.display_name }}
           </button>
         }
-      }
-      @if (s.game.paranoia_percent > 0) {
-        <button type="button" [class.selected]="role.voted && role.vote_for === null" (click)="vote(null)">
-          Kein Imposter
-        </button>
-      }
-    </div>
+        @if (s.game.paranoia_percent > 0) {
+          <button
+            type="button"
+            [class.selected]="role.voted && role.vote_for === null"
+            (click)="vote(null)"
+          >
+            Kein Imposter
+          </button>
+        }
+      </div>
+    }
   }
 
   @if (summary(); as sum) {
     <h2>Auflösung Runde {{ s.game.current_round }}</h2>
     <p>
-      {{ sum.result === 'win' ? 'Sieg' : sum.result === 'loss' ? 'Niederlage' : 'Kein Ergebnis eingetragen' }} ·
-      Imposter: <strong>{{ name(sum.imposterId) }}</strong>
+      {{
+        sum.result === 'win'
+          ? 'Sieg'
+          : sum.result === 'loss'
+            ? 'Niederlage'
+            : 'Kein Ergebnis eingetragen'
+      }}
+      · Imposter: <strong>{{ name(sum.imposterId) }}</strong>
     </p>
     <table class="admin-table">
       <thead>
-        <tr><th>Spieler</th><th>Rolle</th><th>Tipp</th><th>Punkte</th></tr>
+        <tr>
+          <th>Spieler</th>
+          <th>Rolle</th>
+          <th>Tipp</th>
+          <th>Punkte</th>
+        </tr>
       </thead>
       <tbody>
         @for (row of sum.rows; track row.profileId) {
@@ -83,7 +159,8 @@
     </table>
     @if (sum.chatTotal > 0) {
       <p class="muted">
-        Chat ({{ sum.chatTotal }} Tipps): {{ sum.chat.get(sum.imposterId ?? '') ?? 0 }} lagen richtig.
+        Chat ({{ sum.chatTotal }} Tipps): {{ sum.chat.get(sum.imposterId ?? '') ?? 0 }} lagen
+        richtig.
       </p>
     }
   }
@@ -100,7 +177,10 @@
         </span>
         <span>
           {{ entry.points }} Punkte
-          @if (auth.currentProfile()?.is_admin && (s.game.status === 'lobby' || s.game.status === 'revealed')) {
+          @if (
+            auth.currentProfile()?.is_admin &&
+            (s.game.status === 'lobby' || s.game.status === 'revealed')
+          ) {
             <button type="button" (click)="kick(entry.player.profile_id)">Entfernen</button>
           }
         </span>
@@ -119,6 +199,12 @@
   }
 
   @if (auth.currentProfile()?.is_admin) {
+    @if (riotKeyProblem() && (s.game.status === 'lobby' || s.game.status === 'revealed')) {
+      <p role="alert">
+        {{ riotKeyProblem() }} Das League-Spiel wird dann nicht erkannt, und das Ergebnis musst du
+        von Hand eintragen. Neuen Schlüssel im Admin-Bereich unter Imposter hinterlegen.
+      </p>
+    }
     <div class="bingo-admin-controls">
       @switch (s.game.status) {
         @case ('playing') {

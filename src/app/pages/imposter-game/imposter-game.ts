@@ -3,6 +3,8 @@ import { Router, RouterLink } from '@angular/router';
 import { ImposterService } from '../../services/imposter.service';
 import { AuthService } from '../../services/auth.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { GameAccountService } from '../../services/game-account.service';
+import { RiotLiveGame } from '../../shared/riot-live-game/riot-live-game';
 import { IMPOSTER_GAMES, currentRoundSummary, totalPoints } from '../../utils/imposter';
 import type { ImposterResult } from '../../models/types';
 
@@ -10,15 +12,22 @@ import type { ImposterResult } from '../../models/types';
 // Verbindung mal hängt (z.B. Laptop kurz im Standby).
 const FALLBACK_POLL_INTERVAL_MS = 30000;
 
+function riotKeyProblemText(status: { last_error: string | null } | null): string | null {
+  if (!status) return 'Es ist kein Riot-API-Schlüssel hinterlegt.';
+  if (status.last_error) return 'Der Riot-API-Schlüssel ist abgelaufen oder ungültig.';
+  return null;
+}
+
 @Component({
   selector: 'app-imposter-game',
-  imports: [RouterLink],
+  imports: [RouterLink, RiotLiveGame],
   templateUrl: './imposter-game.html',
 })
 export class ImposterGame {
   private readonly imposterService = inject(ImposterService);
   private readonly router = inject(Router);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly gameAccounts = inject(GameAccountService);
   protected readonly auth = inject(AuthService);
 
   readonly id = input.required<string>();
@@ -62,6 +71,51 @@ export class ImposterGame {
   protected readonly summary = computed(() => {
     const s = this.state.value();
     return s ? currentRoundSummary(s) : null;
+  });
+
+  /** Teilnehmer des League-Spiels der aktuellen Runde, sobald der Worker es erkannt hat. */
+  protected readonly liveParticipants = computed(() => {
+    const s = this.state.value();
+    if (!s || s.game.status === 'lobby') return null;
+    return s.rounds.find((r) => r.round === s.game.current_round)?.riot_participants ?? null;
+  });
+
+  // Nur für Admins bei LoL-Spielen, die RPC verweigert allen anderen ohnehin.
+  protected readonly riotKeyStatus = resource({
+    params: () =>
+      this.auth.currentProfile()?.is_admin && this.state.value()?.game.game_key === 'lol' ? true : undefined,
+    loader: () => this.gameAccounts.getRiotApiKeyStatus(),
+  });
+
+  /** Warnung vor dem Start einer Runde, null wenn der Schlüssel zuletzt funktioniert hat. */
+  protected readonly riotKeyProblem = computed(() =>
+    this.riotKeyStatus.hasValue() ? riotKeyProblemText(this.riotKeyStatus.value()) : null,
+  );
+
+  /** Spieler, die (noch) keinem Ingame-Spieler zugeordnet sind. Solange es welche gibt, ist die Abstimmung gesperrt. */
+  protected readonly unmappedPlayers = computed(() => {
+    const s = this.state.value();
+    const participants = this.liveParticipants();
+    if (!s || !participants) return [];
+    return s.players.filter((p) => !participants.some((x) => x.profile_id === p.profile_id));
+  });
+
+  protected readonly unmappedNames = computed(() =>
+    this.unmappedPlayers()
+      .map((p) => p.profile.display_name)
+      .join(', '),
+  );
+
+  /** Wählbar ist jeder andere Spieler, mit erkanntem League-Spiel aber nur aus dem eigenen Ingame-Team. */
+  protected readonly voteTargets = computed(() => {
+    const s = this.state.value();
+    const me = this.auth.currentProfile()?.id;
+    if (!s) return [];
+    const others = s.players.filter((p) => p.profile_id !== me);
+    const participants = this.liveParticipants();
+    if (!participants) return others;
+    const teamOf = (profileId: string | undefined) => participants.find((x) => x.profile_id === profileId)?.team_id;
+    return others.filter((p) => teamOf(p.profile_id) === teamOf(me));
   });
 
   protected readonly votedCount = computed(() => {
@@ -127,8 +181,27 @@ export class ImposterGame {
     await this.run(() => this.imposterService.removePlayer(this.id(), profileId), 'Entfernen fehlgeschlagen.');
   }
 
-  protected assignRoles(): Promise<void> {
-    return this.run(() => this.imposterService.assignRoles(this.id()), 'Rollen konnten nicht verteilt werden.');
+  protected async assignRoles(): Promise<void> {
+    // Frisch abfragen statt den Stand vom Seitenaufruf zu nehmen, der Worker prüft den Schlüssel laufend.
+    if (this.state.value()?.game.game_key === 'lol') {
+      this.error.set(null);
+      let problem: string | null;
+      try {
+        problem = riotKeyProblemText(await this.gameAccounts.getRiotApiKeyStatus());
+      } catch (err) {
+        console.error(err);
+        problem = 'Der Status des Riot-API-Schlüssels konnte nicht geprüft werden.';
+      }
+      this.riotKeyStatus.reload();
+      if (problem && !(await this.confirmDialog.ask(`${problem} Das League-Spiel wird nicht erkannt. Trotzdem starten?`))) {
+        return;
+      }
+    }
+    return this.run(async () => {
+      await this.imposterService.assignRoles(this.id());
+      // Worker sofort nach dem League-Spiel suchen lassen statt erst beim nächsten Alarm.
+      this.gameAccounts.pokeWorker();
+    }, 'Rollen konnten nicht verteilt werden.');
   }
 
   /** Match vorbei: Ergebnis festhalten und Abstimmung öffnen. */
@@ -147,6 +220,32 @@ export class ImposterGame {
       return;
     }
     await this.run(() => this.imposterService.setStatus(this.id(), 'revealed'), 'Auflösen fehlgeschlagen.');
+  }
+
+  protected participantIndex(profileId: string): number {
+    return this.liveParticipants()?.findIndex((x) => x.profile_id === profileId) ?? -1;
+  }
+
+  /** Admin: ordnet einen Spieler einem Ingame-Spieler zu (Index in riot_participants, '' = keiner). */
+  protected assignParticipant(profileId: string, indexValue: string): Promise<void> {
+    const s = this.state.value()!;
+    const player = s.players.find((p) => p.profile_id === profileId)!;
+    // Erst die alte Zuordnung des Spielers lösen, ein Spieler steckt immer in höchstens einem Ingame-Spieler.
+    const updated = this.liveParticipants()!.map((x) =>
+      x.profile_id === profileId ? { ...x, profile_id: null, twitch_name: null } : x,
+    );
+    const chosen = indexValue === '' ? null : Number(indexValue);
+    if (chosen !== null) {
+      updated[chosen] = { ...updated[chosen], profile_id: profileId, twitch_name: player.profile.display_name };
+    }
+    return this.run(async () => {
+      await this.imposterService.setParticipants(this.id(), s.game.current_round, updated);
+      // Riot ID als Konto merken, damit die Zuordnung ab der nächsten Runde automatisch klappt.
+      const participant = chosen !== null ? updated[chosen] : null;
+      if (participant?.puuid && participant.riot_id) {
+        await this.gameAccounts.addVerified(profileId, 'lol', participant.riot_id, participant.puuid);
+      }
+    }, 'Zuordnung konnte nicht gespeichert werden.');
   }
 
   protected vote(target: string | null): Promise<void> {

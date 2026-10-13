@@ -1,0 +1,19 @@
+@for (team of teams(); track team.teamId) {
+  <div class="riot-team" [class.riot-team-red]="team.teamId === 200">
+    @for (p of team.players; track p.puuid + p.riot_id) {
+      <div class="riot-player" [class.riot-player-known]="p.profile_id">
+        @if (p.champion_image) {
+          <img [src]="p.champion_image" [alt]="p.champion_name" [title]="p.champion_name" />
+        } @else {
+          <div class="riot-player-placeholder">{{ p.champion_name }}</div>
+        }
+        <span class="riot-player-name">
+          {{ gameName(p.riot_id) }}
+          @if (p.twitch_name) {
+            <span class="riot-player-twitch">({{ p.twitch_name }})</span>
+          }
+        </span>
+      </div>
+    }
+  </div>
+}

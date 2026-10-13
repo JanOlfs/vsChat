@@ -1,0 +1,42 @@
+<h1>Profil</h1>
+
+<h2>League-of-Legends-Konten</h2>
+<p class="muted">
+  Trag hier deine Riot IDs ein (EUW). Läuft eine Imposter-Runde, erkennt die Seite darüber automatisch das Spiel, zeigt
+  die Champions an und trägt am Ende Sieg oder Niederlage ein.
+</p>
+
+@if (error()) {
+  <p role="alert">{{ error() }}</p>
+}
+
+<ul class="simple-list">
+  @for (account of accounts.value(); track account.id) {
+    <li>
+      <span>
+        {{ account.name }}
+        @switch (account.status) {
+          @case ('pending') {
+            <span class="muted">(wird geprüft …)</span>
+          }
+          @case ('not_found') {
+            <span class="imposter-role-bad">(nicht gefunden, Schreibweise prüfen)</span>
+          }
+        }
+      </span>
+      <button type="button" (click)="removeAccount(account.id)">Entfernen</button>
+    </li>
+  } @empty {
+    @if (!accounts.isLoading()) {
+      <li class="muted">Noch kein Konto eingetragen.</li>
+    }
+  }
+</ul>
+
+<form class="admin-form" (submit)="addAccount($event, nameInput)">
+  <label>
+    Riot ID
+    <input #nameInput type="text" placeholder="Name#TAG" required />
+  </label>
+  <button type="submit">Hinzufügen</button>
+</form>

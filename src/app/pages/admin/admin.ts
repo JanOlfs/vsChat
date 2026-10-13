@@ -2,6 +2,7 @@ import { Component, DestroyRef, computed, inject, input, resource, signal } from
 import { RouterLink } from '@angular/router';
 import { BingoList } from '../bingo-list/bingo-list';
 import { ImposterList } from '../imposter-list/imposter-list';
+import { RiotKey } from './riot-key';
 import { CategoryService } from '../../services/category.service';
 import { ApplicationService } from '../../services/application.service';
 import { RoundControlService } from '../../services/round-control.service';
@@ -17,7 +18,7 @@ const FALLBACK_POLL_INTERVAL_MS = 30000;
 
 @Component({
   selector: 'app-admin',
-  imports: [RouterLink, BingoList, ImposterList],
+  imports: [RouterLink, BingoList, ImposterList, RiotKey],
   templateUrl: './admin.html',
 })
 export class Admin {

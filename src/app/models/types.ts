@@ -133,6 +133,32 @@ export interface ImposterRound {
   game_id: string;
   round: number;
   result: ImposterResult | null;
+  started_at: string;
+  riot_match_id: string | null;
+  /** Vom Chatbot-Worker eingetragen, sobald das League-Spiel lädt (alle 10 Spieler). */
+  riot_participants: RiotParticipant[] | null;
+}
+
+export interface RiotParticipant {
+  puuid: string;
+  riot_id: string; // "Name#TAG"
+  team_id: number; // 100 = blau, 200 = rot
+  champion_name: string;
+  champion_image: string | null;
+  profile_id: string | null;
+  twitch_name: string | null;
+}
+
+export type GameAccountStatus = 'pending' | 'ok' | 'not_found';
+
+export interface GameAccount {
+  id: string;
+  profile_id: string;
+  game_key: string;
+  name: string;
+  external_id: string | null;
+  status: GameAccountStatus;
+  created_at: string;
 }
 
 /** Fremde Rollen kommen per RLS erst nach der Auflösung der Runde mit. */

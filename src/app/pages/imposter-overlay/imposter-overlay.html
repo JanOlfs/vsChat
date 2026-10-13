@@ -2,6 +2,10 @@
   <div class="overlay-panel">
     <h2>Imposter · Runde {{ s.game.current_round }}</h2>
 
+    @if (liveParticipants(); as participants) {
+      <app-riot-live-game [participants]="participants" />
+    }
+
     @if (s.game.status === 'playing' || s.game.status === 'voting') {
       <p>Wer ist der Imposter? Tippt im Chat: <strong>!sus &lt;name&gt;</strong></p>
     }

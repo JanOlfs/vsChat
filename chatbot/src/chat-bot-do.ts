@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Env } from './env';
 import { connectIrc, loginFromPrefix, parseIrcMessage } from './twitch-irc';
+import { pollImposterLol } from './riot';
 
 interface CheckedInEntry {
   twitchUserId: string;
@@ -28,6 +29,10 @@ const EMPTY_ROUND: RoundState = {
 };
 
 const RECONNECT_CHECK_MS = 2 * 60_000;
+// Solange eine LoL-Imposter-Runde läuft, öfter bei Riot nachsehen (Spielstart/-ende).
+const IMPOSTER_POLL_MS = 30_000;
+// /poke ist öffentlich (z.B. nach dem Eintragen eines Kontos), deshalb gedrosselt.
+const MIN_POKE_INTERVAL_MS = 10_000;
 // Twitch-Access-Tokens laufen üblicherweise nach ~4h ab, wir erneuern proaktiv
 // deutlich davor, damit es im laufenden Stream keinen stillen Verbindungsabriss gibt.
 const TOKEN_REFRESH_INTERVAL_MS = 3 * 60 * 60_000;
@@ -52,6 +57,7 @@ export class ChatBotDo implements DurableObject {
   private round: RoundState = EMPTY_ROUND;
   private tokens: TokenState | null = null;
   private lastConnectAttempt = 0;
+  private lastPoke = 0;
   private ready: Promise<void>;
 
   constructor(
@@ -102,6 +108,13 @@ export class ChatBotDo implements DurableObject {
         case '/cancelround':
           await this.cancelRound();
           break;
+        case '/poke':
+          // Nächsten Riot-Abgleich sofort statt erst beim nächsten Alarm.
+          if (Date.now() - this.lastPoke > MIN_POKE_INTERVAL_MS) {
+            this.lastPoke = Date.now();
+            await this.ctx.storage.setAlarm(Date.now());
+          }
+          break;
         default:
           break; // Keepalive-Ping, kein Kommando.
       }
@@ -118,7 +131,13 @@ export class ChatBotDo implements DurableObject {
   async alarm(): Promise<void> {
     await this.ready;
     await this.ensureConnected();
-    await this.ctx.storage.setAlarm(Date.now() + RECONNECT_CHECK_MS);
+    let imposterPlaying = false;
+    try {
+      imposterPlaying = await pollImposterLol(this.supabase());
+    } catch (err) {
+      console.error('imposter riot poll fehlgeschlagen', err);
+    }
+    await this.ctx.storage.setAlarm(Date.now() + (imposterPlaying ? IMPOSTER_POLL_MS : RECONNECT_CHECK_MS));
   }
 
   private async ensureConnected(): Promise<void> {

@@ -12,27 +12,26 @@
 
     @if (summary(); as sum) {
       <p class="bingo-winner">Imposter: {{ name(sum.imposterId) }}</p>
-      <ul>
-        @for (row of sum.rows; track row.profileId) {
-          <li>
-            <span>{{ name(row.profileId) }} ({{ roleName(row.role) }})</span>
-            <span class="votes">+{{ row.points }}</span>
-          </li>
-        }
-      </ul>
-      @if (sum.chatTotal > 0) {
-        <p class="muted">Chat: {{ sum.chat.get(sum.imposterId ?? '') ?? 0 }} von {{ sum.chatTotal }} lagen richtig</p>
-      }
     }
 
-    <h2>Punkte</h2>
-    <ul>
+    <!-- Eine Liste: Gesamtpunkte, nach der Auflösung zusätzlich Rolle und Punkte dieser Runde. -->
+    <ul class="imposter-overlay-scores">
       @for (entry of scoreboard(); track entry.profileId) {
+        @let row = summary()?.rows?.find((r) => r.profileId === entry.profileId);
         <li>
-          <span>{{ entry.name }}</span>
+          <span [class.imposter-role-bad]="row?.role === 'imposter'">{{ entry.name }}</span>
+          @if (row) {
+            <span class="muted">+{{ row.points }}</span>
+          }
           <span class="votes">{{ entry.points }}</span>
         </li>
       }
     </ul>
+
+    @if (summary(); as sum) {
+      @if (sum.chatTotal > 0) {
+        <p class="muted">Chat: {{ sum.chat.get(sum.imposterId ?? '') ?? 0 }} von {{ sum.chatTotal }} lagen richtig</p>
+      }
+    }
   </div>
 }

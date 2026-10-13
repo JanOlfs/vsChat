@@ -1,6 +1,6 @@
 import { Component, DestroyRef, computed, effect, inject, input, resource } from '@angular/core';
 import { ImposterService } from '../../services/imposter.service';
-import { IMPOSTER_GAMES, currentRoundSummary, totalPoints } from '../../utils/imposter';
+import { currentRoundSummary, totalPoints } from '../../utils/imposter';
 import { RiotLiveGame } from '../../shared/riot-live-game/riot-live-game';
 
 // Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
@@ -60,10 +60,5 @@ export class ImposterOverlay {
   protected name(profileId: string | null): string {
     if (!profileId) return 'Niemand';
     return this.state.value()?.players.find((p) => p.profile_id === profileId)?.profile.display_name ?? '?';
-  }
-
-  protected roleName(role: string): string {
-    const key = this.state.value()?.game.game_key ?? '';
-    return IMPOSTER_GAMES[key]?.roles[role]?.name ?? role;
   }
 }

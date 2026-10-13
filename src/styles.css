@@ -550,6 +550,11 @@ app-imposter-overlay {
   opacity: 0.7;
 }
 
+/* Imposter-Overlay: Name links, Rundenpunkte und Gesamt rechtsbündig daneben. */
+.overlay-panel .imposter-overlay-scores li span:first-child {
+  flex: 1;
+}
+
 /* Check-in-Liste: rot = beworben, noch nicht eingecheckt; grün = eingecheckt. */
 app-overlay .overlay-panel li.applicant {
   color: #f87171;

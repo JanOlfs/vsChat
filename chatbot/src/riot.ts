@@ -114,7 +114,7 @@ async function pollGame(
 ): Promise<void> {
   const { data: roundRow } = await supabase
     .from('imposter_rounds')
-    .select('started_at, riot_match_id, riot_participants')
+    .select('riot_match_id, riot_participants')
     .eq('game_id', gameId)
     .eq('round', round)
     .maybeSingle();
@@ -131,7 +131,7 @@ async function pollGame(
   const roundPlayers = new Set((roles ?? []).map((r) => r.profile_id as string));
 
   if (!roundRow.riot_match_id) {
-    await findLiveGame(supabase, apiKey, gameId, round, Date.parse(roundRow.started_at), roundPlayers);
+    await findLiveGame(supabase, apiKey, gameId, round, roundPlayers);
   } else {
     await fetchResult(supabase, apiKey, gameId, round, roundRow.riot_match_id, roundRow.riot_participants ?? [], roundPlayers);
   }
@@ -140,7 +140,6 @@ async function pollGame(
 interface SpectatorGame {
   gameId: number;
   platformId: string;
-  gameStartTime: number; // 0 solange noch geladen wird
   participants: { puuid: string | null; riotId?: string; teamId: number; championId: number }[];
 }
 
@@ -149,9 +148,19 @@ async function findLiveGame(
   apiKey: string,
   gameId: string,
   round: number,
-  roundStartedAt: number,
   roundPlayers: Set<string>,
 ): Promise<void> {
+  // Auch ein Spiel, das schon vor dem Verteilen der Rollen lief, wird übernommen.
+  // Nur eins, das schon einer früheren Runde gehört, nicht (sonst hängt die neue
+  // Runde am alten Spiel, solange das noch läuft).
+  const { data: earlier } = await supabase
+    .from('imposter_rounds')
+    .select('riot_match_id')
+    .eq('game_id', gameId)
+    .lt('round', round)
+    .not('riot_match_id', 'is', null);
+  const usedMatchIds = new Set((earlier ?? []).map((r) => r.riot_match_id as string));
+
   const { data: accounts } = await supabase
     .from('game_accounts')
     .select('profile_id, external_id, profile:profiles(display_name)')
@@ -173,8 +182,7 @@ async function findLiveGame(
       apiKey,
     );
     if (!live) continue;
-    // Spiel lief schon vor dem Verteilen der Rollen (1 Min. Puffer für Uhrabweichungen).
-    if (live.gameStartTime !== 0 && live.gameStartTime < roundStartedAt - 60_000) continue;
+    if (usedMatchIds.has(`${live.platformId}_${live.gameId}`)) continue;
 
     // Nur übernehmen, wenn wirklich die Runde spielt und nicht einer allein nebenher.
     const inGame = new Set(live.participants.map((p) => (p.puuid && profileByPuuid.get(p.puuid)) || null));

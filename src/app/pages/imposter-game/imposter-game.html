@@ -20,7 +20,7 @@
     @case ('playing') {
       <p>Match läuft. Viel Glück, und trau niemandem.</p>
       @if (s.game.game_key === 'lol' && !liveParticipants()) {
-        <p class="muted">Das League-Spiel wird automatisch erkannt, sobald es lädt.</p>
+        <p class="muted">Das League-Spiel wird automatisch erkannt, auch wenn es schon läuft.</p>
       }
     }
     @case ('voting') {

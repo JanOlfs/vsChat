@@ -4,12 +4,12 @@
     Captnblacky
   </a>
   <nav>
-    <a routerLink="/vs-chat">vs Chat</a>
+    <a routerLink="/vs-chat" routerLinkActive="active">vs Chat</a>
     @if (auth.isLoggedIn()) {
-      <a routerLink="/bingo">Bingo</a>
-      <a routerLink="/imposter">Imposter</a>
+      <a routerLink="/bingo" routerLinkActive="active">Bingo</a>
+      <a routerLink="/imposter" routerLinkActive="active">Imposter</a>
       @if (auth.currentProfile()?.is_admin) {
-        <a routerLink="/admin">Admin</a>
+        <a routerLink="/admin" routerLinkActive="active">Admin</a>
       }
       <span class="user">{{ auth.currentProfile()?.display_name }}</span>
       <button type="button" (click)="logout()">Logout</button>

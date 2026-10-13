@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { APP_VERSION } from '../version';
 import { ConfirmDialog } from '../shared/confirm-dialog/confirm-dialog';
@@ -10,7 +10,7 @@ import { ConfirmDialog } from '../shared/confirm-dialog/confirm-dialog';
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterOutlet, ConfirmDialog],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, ConfirmDialog],
   templateUrl: './shell.html',
 })
 export class Shell {

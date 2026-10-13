@@ -44,21 +44,30 @@
         }
       </select>
     </label>
-    <label>
-      <span
-        ><input type="checkbox" [checked]="paranoia()" (change)="paranoia.set(!paranoia())" />
-        Paranoia</span
-      >
-      <input
-        #paranoiaInput
-        type="number"
-        min="0"
-        max="100"
-        value="20"
-        [disabled]="!paranoia()"
-        title="Chance in Prozent, dass eine Runde ganz ohne Imposter läuft"
-      />
-    </label>
+    <div
+      class="admin-form-field"
+      title="Chance in Prozent, dass eine Runde ganz ohne Imposter läuft"
+    >
+      Paranoia
+      <div class="paranoia-field">
+        <input
+          type="checkbox"
+          aria-label="Paranoia aktivieren"
+          [checked]="paranoia()"
+          (change)="paranoia.set(!paranoia())"
+        />
+        <input
+          #paranoiaInput
+          type="number"
+          min="0"
+          max="100"
+          value="20"
+          aria-label="Paranoia in Prozent"
+          [disabled]="!paranoia()"
+        />
+        <span>%</span>
+      </div>
+    </div>
     <button type="submit">Anlegen</button>
   </form>
 }

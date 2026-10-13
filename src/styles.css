@@ -1,6 +1,8 @@
 /* Farb-/Font-Grundlage abgeleitet vom Twitch-Kanal (dunkel, grungy, kräftiges Rot,
    blauer Akzent aus dem Charakter-Artwork). */
 :root {
+  /* Native Bedienelemente (Dropdown-Liste, Zahlenpfeile) ebenfalls dunkel. */
+  color-scheme: dark;
   --bg: #111113;
   --bg-elevated: #1b1b1e;
   --bg-elevated-2: #242427;
@@ -49,7 +51,8 @@ a {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
   color: var(--text);
 }
@@ -105,14 +108,39 @@ button:disabled {
   background: var(--green);
 }
 
-input {
+input,
+select {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 0.35rem;
   padding: 0.4rem 0.6rem;
 }
 
-input:focus {
+/* Eigener Pfeil statt dem Browser-Standard, damit das Dropdown wie die Textfelder aussieht. */
+select {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239c9b9f' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  cursor: pointer;
+}
+
+input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  accent-color: var(--red);
+  cursor: pointer;
+}
+
+input:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+input:focus,
+select:focus {
   outline: 2px solid var(--blue);
   outline-offset: 1px;
 }
@@ -157,6 +185,12 @@ input:focus {
 
 .site-header nav a:hover {
   color: var(--blue);
+}
+
+/* Aktueller Tab, gleiche Markierung wie bei den Admin-Unter-Tabs. */
+.site-header nav a.active {
+  color: var(--text);
+  box-shadow: 0 2px 0 var(--red);
 }
 
 .site-header .user {
@@ -322,8 +356,22 @@ main {
   flex-wrap: wrap;
 }
 
-.admin-form input {
+.admin-form input:not([type='checkbox']),
+.admin-form select {
   height: 2.5rem;
+}
+
+/* Checkbox, Prozentfeld und "%" in einer Zeile, auf Höhe der anderen Felder. */
+.paranoia-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.5rem;
+  color: var(--text);
+}
+
+.paranoia-field input[type='number'] {
+  width: 5rem;
 }
 
 .admin-form button {

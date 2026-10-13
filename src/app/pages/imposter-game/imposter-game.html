@@ -155,22 +155,40 @@
       }}
       · Imposter: <strong>{{ name(sum.imposterId) }}</strong>
     </p>
+    <!-- Nach der Auflösung ersetzt diese Tabelle die normale Spielerliste. -->
     <table class="admin-table">
       <thead>
         <tr>
           <th>Spieler</th>
           <th>Rolle</th>
           <th>Tipp</th>
-          <th>Punkte</th>
+          <th>Runde</th>
+          <th>Gesamt</th>
+          @if (auth.currentProfile()?.is_admin) {
+            <th></th>
+          }
         </tr>
       </thead>
       <tbody>
-        @for (row of sum.rows; track row.profileId) {
+        @for (entry of scoreboard(); track entry.player.profile_id) {
+          @let row = roundRow(sum, entry.player.profile_id);
           <tr>
-            <td>{{ name(row.profileId) }}</td>
-            <td [class.imposter-role-bad]="row.role === 'imposter'">{{ roleName(row.role) }}</td>
-            <td>{{ row.voted ? name(row.voteFor) : '-' }}</td>
-            <td>+{{ row.points }}</td>
+            <td>{{ entry.player.profile.display_name }}</td>
+            @if (row) {
+              <td [class.imposter-role-bad]="row.role === 'imposter'">{{ roleName(row.role) }}</td>
+              <td>{{ row.voted ? name(row.voteFor) : '-' }}</td>
+              <td>+{{ row.points }}</td>
+            } @else {
+              <td class="muted" colspan="3">neu dabei</td>
+            }
+            <td>
+              <strong>{{ entry.points }}</strong>
+            </td>
+            @if (auth.currentProfile()?.is_admin) {
+              <td>
+                <button type="button" (click)="kick(entry.player.profile_id)">Entfernen</button>
+              </td>
+            }
           </tr>
         }
       </tbody>
@@ -181,32 +199,32 @@
         richtig.
       </p>
     }
+  } @else {
+    <h2>Spieler</h2>
+    <ul class="simple-list">
+      @for (entry of scoreboard(); track entry.player.profile_id) {
+        <li>
+          <span>
+            {{ entry.player.profile.display_name }}
+            @if (s.game.status === 'voting' && entry.player.voted_round === s.game.current_round) {
+              <span class="muted">(abgestimmt)</span>
+            }
+          </span>
+          <span>
+            {{ entry.points }} Punkte
+            @if (
+              auth.currentProfile()?.is_admin &&
+              (s.game.status === 'lobby' || s.game.status === 'revealed')
+            ) {
+              <button type="button" (click)="kick(entry.player.profile_id)">Entfernen</button>
+            }
+          </span>
+        </li>
+      } @empty {
+        <li class="muted">Noch niemand beigetreten.</li>
+      }
+    </ul>
   }
-
-  <h2>Spieler</h2>
-  <ul class="simple-list">
-    @for (entry of scoreboard(); track entry.player.profile_id) {
-      <li>
-        <span>
-          {{ entry.player.profile.display_name }}
-          @if (s.game.status === 'voting' && entry.player.voted_round === s.game.current_round) {
-            <span class="muted">(abgestimmt)</span>
-          }
-        </span>
-        <span>
-          {{ entry.points }} Punkte
-          @if (
-            auth.currentProfile()?.is_admin &&
-            (s.game.status === 'lobby' || s.game.status === 'revealed')
-          ) {
-            <button type="button" (click)="kick(entry.player.profile_id)">Entfernen</button>
-          }
-        </span>
-      </li>
-    } @empty {
-      <li class="muted">Noch niemand beigetreten.</li>
-    }
-  </ul>
 
   @if (s.game.status === 'lobby' || s.game.status === 'revealed') {
     @if (isPlayer()) {

@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { GameAccountService } from '../../services/game-account.service';
 import { RiotLiveGame } from '../../shared/riot-live-game/riot-live-game';
-import { IMPOSTER_GAMES, currentRoundSummary, totalPoints } from '../../utils/imposter';
+import { IMPOSTER_GAMES, type RoundSummary, currentRoundSummary, totalPoints } from '../../utils/imposter';
 import type { ImposterResult } from '../../models/types';
 
 // Realtime hält uns aktuell, das hier ist nur das Sicherheitsnetz falls eine
@@ -232,6 +232,10 @@ export class ImposterGame {
       return;
     }
     await this.run(() => this.imposterService.setStatus(this.id(), 'revealed'), 'Auflösen fehlgeschlagen.');
+  }
+
+  protected roundRow(sum: RoundSummary, profileId: string) {
+    return sum.rows.find((r) => r.profileId === profileId);
   }
 
   protected participantIndex(profileId: string): number {
